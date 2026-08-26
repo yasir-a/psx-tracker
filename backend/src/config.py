@@ -43,6 +43,7 @@ class DevelopmentSettings(Settings):
 
 
 class TestingSettings(Settings):
+    __test__ = False
     ENV: Literal["development", "testing", "production"] = "testing"
     DEBUG: bool = True
     DATABASE_URL: str = "postgresql://psx_user:psx_password@localhost:5432/psx_portfolio_test"

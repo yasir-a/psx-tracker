@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import os
 from datetime import datetime, timezone
 from typing import Any
-from flask import Blueprint, jsonify, Response
+from flask import Blueprint, current_app, jsonify, Response
+from sqlalchemy import text
 from src.config import get_settings
+from src.infrastructure.db.session import get_engine
 
 health_bp = Blueprint("health", __name__)
 _START_TIME = datetime.now(timezone.utc)
@@ -29,13 +30,22 @@ def health_check() -> tuple[Response, int]:
 
 @health_bp.route("/ready", methods=["GET"])
 def readiness_check() -> tuple[Response, int]:
-    """Readiness probe: checks downstream dependency connectivity (DB, Redis)."""
+    """Readiness probe: checks downstream dependency connectivity (PostgreSQL, Redis)."""
     checks: dict[str, str] = {
         "application": "ok",
     }
-    # Future phases will attach live PostgreSQL & Redis ping checks here
-    is_ready = all(status == "ok" for status in checks.values())
 
+    # Database connectivity check
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+    except Exception as e:
+        current_app.logger.warning("Database readiness check failed: %s", str(e))
+        checks["database"] = "unavailable"
+
+    is_ready = all(status == "ok" for status in checks.values())
     payload: dict[str, Any] = {
         "status": "ready" if is_ready else "degraded",
         "timestamp": datetime.now(timezone.utc).isoformat(),

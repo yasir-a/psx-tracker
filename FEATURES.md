@@ -31,12 +31,16 @@ Status definitions:
 | `BE-003` | Health Check & System Readiness Endpoints | **Completed** | `BE-001` | `/api/v1/health` and `/api/v1/ready` endpoints verifying DB and Redis liveness. |
 | `BE-004` | Structured Logging & Request Tracing | **Completed** | `BE-001` | Request ID injection and context logging (no sensitive data). |
 
+---
+
+## Phase 2: Database & Migrations (PostgreSQL)
+
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `DB-001` | PostgreSQL Connection & Session Management | Planned | `BE-001` | Engine setup, connection pooling, transactional unit-of-work. |
-| `DB-002` | Alembic Migration Setup | Planned | `DB-001` | Migration scripts directory, version tracking, downgrade support. |
-| `DB-003` | Core Schema: Users & Portfolios | Planned | `DB-002` | Initial schema tables, unique constraints, foreign keys, index optimization. |
-| `DB-004` | Repository Pattern Implementation | Planned | `DB-003` | Abstract base repositories and PostgreSQL implementations. |
+| `DB-001` | PostgreSQL Connection & Session Management | **Completed** | `BE-001` | Engine setup, connection pooling, transactional unit-of-work. |
+| `DB-002` | Alembic Migration Setup | **Completed** | `DB-001` | Migration scripts directory, version tracking, downgrade support. |
+| `DB-003` | Core Schema: Users & Portfolios | **Completed** | `DB-002` | Initial schema tables, unique constraints, foreign keys, index optimization. |
+| `DB-004` | Repository Pattern Implementation | **Completed** | `DB-003` | Abstract base repositories and PostgreSQL implementations. |
 
 ---
 
