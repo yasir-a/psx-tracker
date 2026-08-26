@@ -5,18 +5,19 @@ import pytest
 from flask import Flask
 from flask.testing import FlaskClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
 
 from src.app import create_app
 from src.config import TestingSettings
 from src.infrastructure.db.base import Base
 import src.infrastructure.db.models  # noqa: F401
+import src.infrastructure.db.session as db_session_module
 
 
 @pytest.fixture(scope="session")
 def test_settings() -> TestingSettings:
     """Provide testing settings."""
-    # Use SQLite in-memory for unit and fast integration tests
     settings = TestingSettings()
     settings.DATABASE_URL = "sqlite:///:memory:"
     return settings
@@ -24,8 +25,17 @@ def test_settings() -> TestingSettings:
 
 @pytest.fixture(scope="session")
 def db_engine(test_settings: TestingSettings):
-    """Create a shared database engine for testing."""
-    engine = create_engine(test_settings.DATABASE_URL)
+    """Create a shared in-memory SQLite database engine for the entire test session."""
+    engine = create_engine(
+        test_settings.DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    # Monkey-patch the global engine in db_session module so Flask uses the same in-memory DB
+    db_session_module._engine = engine
+    db_session_module._session_factory = None
+    db_session_module._scoped_session = None
+
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -46,7 +56,7 @@ def db_session(db_engine) -> Generator[Session, None, None]:
 
 
 @pytest.fixture
-def app(test_settings: TestingSettings) -> Flask:
+def app(test_settings: TestingSettings, db_engine) -> Flask:
     """Create and configure a Flask application instance for testing."""
     app = create_app(test_settings)
     return app

@@ -48,10 +48,10 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `AUTH-001` | User Registration & Argon2 Password Hashing | Planned | `DB-003` | Secure hashing, email normalization, validation. |
-| `AUTH-002` | Session Management & Token Handling | Planned | `AUTH-001` | Secure HTTP-only cookies, Redis token revocation/session tracking. |
-| `AUTH-003` | Redis Rate Limiting | Planned | `BE-001` | IP and user rate limiting middleware for sensitive endpoints. |
-| `AUTH-004` | User-Owned Resource Authorization | Planned | `AUTH-002` | Strict checks ensuring users can only access their own portfolios/transactions. |
+| `AUTH-001` | User Registration & Argon2 Password Hashing | **Completed** | `DB-003` | Secure hashing, email normalization, validation. |
+| `AUTH-002` | Session Management & Token Handling | **Completed** | `AUTH-001` | Secure HTTP-only cookies, Redis token revocation/session tracking. |
+| `AUTH-003` | Redis Rate Limiting | **Completed** | `BE-001` | IP and user rate limiting middleware for sensitive endpoints. |
+| `AUTH-004` | User-Owned Resource Authorization | **Completed** | `AUTH-002` | Strict checks ensuring users can only access their own portfolios/transactions. |
 
 ---
 
