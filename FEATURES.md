@@ -26,14 +26,10 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `BE-001` | Modular Flask Application Factory | Planned | `GOV-004` | Blueprints layout, app factory pattern, structured config management. |
-| `BE-002` | Structured Error Handling & Response Format | Planned | `BE-001` | Uniform error handler and standard API response envelope. |
-| `BE-003` | Health Check & System Readiness Endpoints | Planned | `BE-001` | `/api/v1/health` and `/api/v1/ready` endpoints verifying DB and Redis liveness. |
-| `BE-004` | Structured Logging & Request Tracing | Planned | `BE-001` | Request ID injection and context logging (no sensitive data). |
-
----
-
-## Phase 2: Database & Migrations (PostgreSQL)
+| `BE-001` | Modular Flask Application Factory | **Completed** | `GOV-004` | Blueprints layout, app factory pattern, structured config management. |
+| `BE-002` | Structured Error Handling & Response Format | **Completed** | `BE-001` | Uniform error handler and standard API response envelope. |
+| `BE-003` | Health Check & System Readiness Endpoints | **Completed** | `BE-001` | `/api/v1/health` and `/api/v1/ready` endpoints verifying DB and Redis liveness. |
+| `BE-004` | Structured Logging & Request Tracing | **Completed** | `BE-001` | Request ID injection and context logging (no sensitive data). |
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
