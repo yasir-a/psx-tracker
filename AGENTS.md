@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 2 — Complete; Ready for Phase 3 (Authentication & Security)**
-* **Status:** PostgreSQL connection management, Alembic migrations, pure domain entities, repository interfaces, and concrete repositories implemented and verified with 14 passing tests.
+* **Current Phase:** **Phase 3 — Complete; Ready for Phase 4 (Portfolio Accounting Domain & FIFO Engine)**
+* **Status:** Argon2id hashing, JWT access/refresh token lifecycle, Redis revocation/rate limiting, auth guards, and complete auth endpoints implemented and verified with 18 passing tests.
 * **Next Steps:**
-  1. Begin Phase 3: Implement Argon2 password hashing, user registration, JWT/session authentication, Redis token revocation/rate-limiting, and portfolio authorization guards.
+  1. Begin Phase 4: Implement pure financial Money & Quantity Value Objects, immutable Transaction Ledger models, FIFO Lot Matching Engine, and deterministic P&L calculations.

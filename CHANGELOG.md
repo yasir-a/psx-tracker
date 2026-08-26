@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 3: Authentication & Security**
+  - Argon2id password hashing and verification in `backend/src/infrastructure/security/password.py`.
+  - PyJWT access and refresh token management with UUID `jti` in `backend/src/infrastructure/security/token_service.py`.
+  - Redis token revocation blacklist and sliding window rate limiter in `backend/src/infrastructure/security/rate_limiter.py`.
+  - Authentication guard `@jwt_required` and rate limiting `@rate_limit` decorators in `backend/src/api/decorators.py`.
+  - Auth application use-case service `AuthService` in `backend/src/application/services/auth_service.py`.
+  - Auth REST API endpoints (`/api/v1/auth/register`, `/login`, `/refresh`, `/logout`, `/me`).
+  - Redis ping verification added to `/api/v1/ready` readiness probe.
+  - Comprehensive unit and end-to-end auth integration test suite (18 passing tests).
 - **Phase 2: Database & Migrations (PostgreSQL)**
   - SQLAlchemy 2.0 connection pooling and Flask request-scoped session teardown in `backend/src/infrastructure/db/session.py`.
   - Alembic database migration environment and initial core schema migration (`001_initial_core_schema.py`) for `users`, `portfolios`, and `cash_balances`.

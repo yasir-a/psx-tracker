@@ -4,7 +4,9 @@ from datetime import datetime, timezone
 from typing import Any
 from flask import Blueprint, current_app, jsonify, Response
 from sqlalchemy import text
+
 from src.config import get_settings
+from src.infrastructure.cache.redis_client import is_redis_available
 from src.infrastructure.db.session import get_engine
 
 health_bp = Blueprint("health", __name__)
@@ -45,7 +47,11 @@ def readiness_check() -> tuple[Response, int]:
         current_app.logger.warning("Database readiness check failed: %s", str(e))
         checks["database"] = "unavailable"
 
-    is_ready = all(status == "ok" for status in checks.values())
+    # Redis connectivity check
+    checks["redis"] = "ok" if is_redis_available() else "unavailable"
+
+    # Application is ready if primary database is available
+    is_ready = checks.get("application") == "ok" and checks.get("database") == "ok"
     payload: dict[str, Any] = {
         "status": "ready" if is_ready else "degraded",
         "timestamp": datetime.now(timezone.utc).isoformat(),

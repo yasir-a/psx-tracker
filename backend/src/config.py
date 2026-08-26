@@ -26,6 +26,15 @@ class Settings(BaseSettings):
     # Redis Settings
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # Security & JWT Settings
+    JWT_SECRET_KEY: str = "default-insecure-jwt-secret-key-change-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # Rate Limiting
+    RATE_LIMIT_AUTH_PER_MINUTE: int = 10
+
     # CORS Settings
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
@@ -48,6 +57,7 @@ class TestingSettings(Settings):
     DEBUG: bool = True
     DATABASE_URL: str = "postgresql://psx_user:psx_password@localhost:5432/psx_portfolio_test"
     REDIS_URL: str = "redis://localhost:6379/1"
+    JWT_SECRET_KEY: str = "testing-jwt-secret-key-1234567890"
 
 
 class ProductionSettings(Settings):
