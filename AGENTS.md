@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 1 — Complete; Ready for Phase 2 (Database & Migrations)**
-* **Status:** Flask application factory, structured configuration, error handlers, tracing middleware, health endpoints, and unit test suite implemented and verified.
+* **Current Phase:** **Phase 2 — Complete; Ready for Phase 3 (Authentication & Security)**
+* **Status:** PostgreSQL connection management, Alembic migrations, pure domain entities, repository interfaces, and concrete repositories implemented and verified with 14 passing tests.
 * **Next Steps:**
-  1. Begin Phase 2: Establish PostgreSQL connection pooling, Alembic migration environment, core user/portfolio entities, and repository interfaces.
+  1. Begin Phase 3: Implement Argon2 password hashing, user registration, JWT/session authentication, Redis token revocation/rate-limiting, and portfolio authorization guards.

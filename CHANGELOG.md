@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 2: Database & Migrations (PostgreSQL)**
+  - SQLAlchemy 2.0 connection pooling and Flask request-scoped session teardown in `backend/src/infrastructure/db/session.py`.
+  - Alembic database migration environment and initial core schema migration (`001_initial_core_schema.py`) for `users`, `portfolios`, and `cash_balances`.
+  - Pure domain entities (`User`, `Portfolio`, `CashBalance`) in `backend/src/domain/entities/`.
+  - Pure abstract repository interfaces (`IUserRepository`, `IPortfolioRepository`) in `backend/src/domain/repositories/`.
+  - Concrete PostgreSQL repository implementations (`PgUserRepository`, `PgPortfolioRepository`) in `backend/src/infrastructure/db/repositories/`.
+  - Live PostgreSQL database ping verification added to `/api/v1/ready` readiness probe.
+  - Comprehensive unit and database integration test suite (14 passing tests).
 - **Phase 1: Backend Foundation (Flask)**
   - Application factory pattern in `backend/src/app.py`.
   - Type-safe, environment-aware configuration via `pydantic-settings` in `backend/src/config.py`.

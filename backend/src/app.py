@@ -6,6 +6,7 @@ from src.api.errors import register_error_handlers
 from src.api.middleware import register_middleware
 from src.api.v1 import v1_bp
 from src.config import Settings, get_settings
+from src.infrastructure.db.session import init_db
 
 
 def create_app(settings: Settings | None = None) -> Flask:
@@ -22,6 +23,9 @@ def create_app(settings: Settings | None = None) -> Flask:
         level=logging.DEBUG if app_settings.DEBUG else logging.INFO,
         format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
     )
+
+    # Initialize Database & Teardown
+    init_db(app, app_settings)
 
     # Register Middlewares & Error Handlers
     register_middleware(app)
