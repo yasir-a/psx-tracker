@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 0 — Complete; Ready for Phase 1 (Backend Foundation)**
-* **Status:** All Phase 0 governance documents, specifications, and baseline configurations committed.
+* **Current Phase:** **Phase 1 — Complete; Ready for Phase 2 (Database & Migrations)**
+* **Status:** Flask application factory, structured configuration, error handlers, tracing middleware, health endpoints, and unit test suite implemented and verified.
 * **Next Steps:**
-  1. Begin Phase 1: Establish modular Flask application factory, configuration, error handling, and health endpoints.
+  1. Begin Phase 2: Establish PostgreSQL connection pooling, Alembic migration environment, core user/portfolio entities, and repository interfaces.
