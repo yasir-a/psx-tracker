@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_AUTH_PER_MINUTE: int = 10
 
+    # Market Data Settings
+    MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "mock"
+    MARKET_DATA_CACHE_TTL_SECONDS: int = 300  # 5 minutes
+    PSX_SCRAPER_TIMEOUT_SECONDS: float = 5.0
+
     # CORS Settings
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
@@ -58,11 +63,13 @@ class TestingSettings(Settings):
     DATABASE_URL: str = "postgresql://psx_user:psx_password@localhost:5432/psx_portfolio_test"
     REDIS_URL: str = "redis://localhost:6379/1"
     JWT_SECRET_KEY: str = "testing-jwt-secret-key-1234567890"
+    MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "mock"
 
 
 class ProductionSettings(Settings):
     ENV: Literal["development", "testing", "production"] = "production"
     DEBUG: bool = False
+    MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "psx_scraper"
 
 
 @lru_cache(maxsize=1)

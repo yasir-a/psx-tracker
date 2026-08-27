@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 5: PSX Market Data Layer**
+  - Abstract market data provider interface `IMarketDataProvider` in `backend/src/domain/market/provider_interface.py`.
+  - PSX security catalog entity `Security` and `MarketQuote` / `HistoricalPrice` value objects in `backend/src/domain/market/`.
+  - Alembic migration (`003_securities_and_prices.py`), SQLAlchemy models (`SecurityModel`, `HistoricalPriceModel`), and repository (`PgSecurityRepository`).
+  - Offline `MockMarketDataProvider` and live adapter `PSXScraperMarketDataProvider`.
+  - Redis caching decorator `CachedMarketService` with batched `MGET` queries and configurable TTL.
+  - Market data REST API endpoints (`/api/v1/market/symbols`, `/quote/<symbol>`, `/quotes`, `/historical/<symbol>`).
+  - Unit and API integration test suite for market domain and caching (31 total passing tests across codebase).
 - **Phase 4: Portfolio Accounting Domain (FIFO Engine)**
   - Financial value objects (`Money` and `Quantity`) with immutable `Decimal` arithmetic and strict currency safety in `backend/src/domain/values/`.
   - Immutable transaction models (`Transaction`, `TransactionType`) and tax lot entities (`TaxLot`, `LotDepletion`, `LotStatus`) in `backend/src/domain/accounting/`.

@@ -71,12 +71,9 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `MKT-001` | MarketDataProvider Abstraction | Planned | `BE-001` | Clean abstract interface for symbols, historical prices, and daily quotes. |
-| `MKT-002` | PSX Security & Symbol Registry | Planned | `DB-003`, `MKT-001` | Sector classifications, active/suspended/delisted status tracking. |
-| `MKT-003` | PSX Market Data Adapter & Caching | Planned | `MKT-001` | Ingestion adapter with Redis caching for real-time and end-of-day quotes. |
-
----
-
+| `MKT-001` | MarketDataProvider Abstraction | **Completed** | `BE-001` | Clean abstract interface for symbols, historical prices, and daily quotes. |
+| `MKT-002` | PSX Security & Symbol Registry | **Completed** | `DB-003`, `MKT-001` | Sector classifications, active/suspended/delisted status tracking. |
+| `MKT-003` | PSX Market Data Adapter & Caching | **Completed** | `MKT-001` | Ingestion adapter with Redis caching for real-time and end-of-day quotes. |
 ## Phase 6: Dividends & Corporate Actions
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
