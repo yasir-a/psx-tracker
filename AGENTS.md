@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 4 — Complete; Ready for Phase 5 (PSX Market Data Layer)**
-* **Status:** Financial Value Objects (`Money`, `Quantity`), Immutable Transaction Ledger models, FIFO Lot Matching Engine, and deterministic Portfolio Replayer implemented and verified with 25 passing tests.
+* **Current Phase:** **Phase 5 — Complete; Ready for Phase 6 (Dividends & Corporate Actions Engine)**
+* **Status:** Abstract `IMarketDataProvider` interface, PSX symbol catalog, `CachedMarketService` with Redis caching, Mock and Live adapters, and market REST endpoints implemented and verified with 31 passing tests.
 * **Next Steps:**
-  1. Begin Phase 5: Implement decoupled `MarketDataProvider` interface, PSX symbol catalog, daily/historical price scrapers/adapters, Redis price caching, and market data API endpoints.
+  1. Begin Phase 6: Implement Corporate Action event models (Cash Dividends with Filer/Non-Filer withholding tax, Bonus share lot generation, Rights share execution, and Stock Splits lot adjustment re-basing).
