@@ -59,11 +59,11 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `ACC-001` | Financial Value Objects (Decimal Money/Quantities) | Planned | `BE-001` | High-precision arithmetic, rounding rules, currency validation. |
-| `ACC-002` | Transaction & Ledger Event Model | Planned | `DB-003` | Immutable transaction records (BUY, SELL, CASH movements, FEES). |
-| `ACC-003` | FIFO Lot Matching Engine | Planned | `ACC-001`, `ACC-002` | Deterministic lot depletion, cost basis tracking, realized gain calculation on sells. |
-| `ACC-004` | Holdings & Unrealized P&L Calculation | Planned | `ACC-003` | Average acquisition cost, market valuation, day return, unrealized P&L. |
-| `ACC-005` | Accounting Test Suite | Planned | `ACC-003` | Comprehensive deterministic test scenarios (multiple buys, partial sells, same-day trades). |
+| `ACC-001` | Financial Value Objects (Decimal Money/Quantities) | **Completed** | `BE-001` | High-precision arithmetic, rounding rules, currency validation. |
+| `ACC-002` | Transaction & Ledger Event Model | **Completed** | `DB-003` | Immutable transaction records (BUY, SELL, CASH movements, FEES). |
+| `ACC-003` | FIFO Lot Matching Engine | **Completed** | `ACC-001`, `ACC-002` | Deterministic lot depletion, cost basis tracking, realized gain calculation on sells. |
+| `ACC-004` | Holdings & Unrealized P&L Calculation | **Completed** | `ACC-003` | Average acquisition cost, market valuation, day return, unrealized P&L. |
+| `ACC-005` | Accounting Test Suite | **Completed** | `ACC-003` | Comprehensive deterministic test scenarios (multiple buys, partial sells, same-day trades). |
 
 ---
 
