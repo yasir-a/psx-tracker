@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 3 — Complete; Ready for Phase 4 (Portfolio Accounting Domain & FIFO Engine)**
-* **Status:** Argon2id hashing, JWT access/refresh token lifecycle, Redis revocation/rate limiting, auth guards, and complete auth endpoints implemented and verified with 18 passing tests.
+* **Current Phase:** **Phase 4 — Complete; Ready for Phase 5 (PSX Market Data Layer)**
+* **Status:** Financial Value Objects (`Money`, `Quantity`), Immutable Transaction Ledger models, FIFO Lot Matching Engine, and deterministic Portfolio Replayer implemented and verified with 25 passing tests.
 * **Next Steps:**
-  1. Begin Phase 4: Implement pure financial Money & Quantity Value Objects, immutable Transaction Ledger models, FIFO Lot Matching Engine, and deterministic P&L calculations.
+  1. Begin Phase 5: Implement decoupled `MarketDataProvider` interface, PSX symbol catalog, daily/historical price scrapers/adapters, Redis price caching, and market data API endpoints.

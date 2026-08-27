@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 4: Portfolio Accounting Domain (FIFO Engine)**
+  - Financial value objects (`Money` and `Quantity`) with immutable `Decimal` arithmetic and strict currency safety in `backend/src/domain/values/`.
+  - Immutable transaction models (`Transaction`, `TransactionType`) and tax lot entities (`TaxLot`, `LotDepletion`, `LotStatus`) in `backend/src/domain/accounting/`.
+  - Deterministic FIFO Lot Matching & Depletion Engine (`FIFOMatcher`) with accurate cost-basis tracking, sell fee proration, and short-selling prevention in `backend/src/domain/accounting/fifo_engine.py`.
+  - Deterministic Portfolio Replayer Engine (`PortfolioReplayer`) deriving real-time holdings, average cost per share, realized P&L, dividend income, and market valuations in `backend/src/domain/accounting/portfolio_replayer.py`.
+  - Alembic migration (`002_transactions_and_tax_lots.py`), SQLAlchemy models, and PostgreSQL repository (`PgTransactionRepository`).
+  - Comprehensive unit and deterministic accounting test suite under `backend/tests/accounting/` (25 passing tests across codebase).
 - **Phase 3: Authentication & Security**
   - Argon2id password hashing and verification in `backend/src/infrastructure/security/password.py`.
   - PyJWT access and refresh token management with UUID `jti` in `backend/src/infrastructure/security/token_service.py`.
