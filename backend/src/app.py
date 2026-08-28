@@ -6,7 +6,9 @@ from src.api.errors import register_error_handlers
 from src.api.middleware import register_middleware
 from src.api.v1 import v1_bp
 from src.config import Settings, get_settings
-from src.infrastructure.db.session import init_db
+from src.infrastructure.db.base import Base
+import src.infrastructure.db.models  # noqa: F401
+from src.infrastructure.db.session import get_engine, init_db
 
 
 def create_app(settings: Settings | None = None) -> Flask:
@@ -24,8 +26,11 @@ def create_app(settings: Settings | None = None) -> Flask:
         format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
     )
 
-    # Initialize Database & Teardown
+    # Initialize Database & create SQLite tables on startup
     init_db(app, app_settings)
+    if app_settings.DATABASE_URL.startswith("sqlite"):
+        engine = get_engine(app_settings)
+        Base.metadata.create_all(bind=engine)
 
     # Register Middlewares & Error Handlers
     register_middleware(app)

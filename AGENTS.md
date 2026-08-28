@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 6 — Complete; Ready for Phase 7 (Frontend Foundation)**
-* **Status:** Complete Corporate Actions Engine (Cash Dividends with 15% Filer / 30% Non-Filer WHT & Zakat deductions, Bonus shares zero-cost lots, Rights shares, Stock Splits lot re-basing, and FBR Section 150 tax reports) implemented and verified with 35 passing tests.
+* **Current Phase:** **Phase 7 — Complete; Ready for Phase 8 (Portfolio UI & Dashboard)**
+* **Status:** React 18, Vite, strict TypeScript, Tailwind CSS design tokens, accessible UI primitives, authenticated API client with token refresh interceptors, AuthContext, and responsive shell navigation layout verified and running.
 * **Next Steps:**
-  1. Begin Phase 7: Initialize modern React + Vite + TypeScript frontend, accessible UI primitives, authenticated API HTTP client, and shell navigation layout.
+  1. Begin Phase 8: Implement interactive Portfolio Dashboard, Holdings Table with live gains, Transaction Entry modals (BUY/SELL/CASH), Corporate Actions forms (with WHT 15%/30%), and performance charts.

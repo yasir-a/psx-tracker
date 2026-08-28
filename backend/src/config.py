@@ -50,11 +50,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-
 class DevelopmentSettings(Settings):
     ENV: Literal["development", "testing", "production"] = "development"
     DEBUG: bool = True
-
+    DATABASE_URL: str = "sqlite:///psx_dev.db"
 
 class TestingSettings(Settings):
     __test__ = False
