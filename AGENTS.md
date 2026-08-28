@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 5 — Complete; Ready for Phase 6 (Dividends & Corporate Actions Engine)**
-* **Status:** Abstract `IMarketDataProvider` interface, PSX symbol catalog, `CachedMarketService` with Redis caching, Mock and Live adapters, and market REST endpoints implemented and verified with 31 passing tests.
+* **Current Phase:** **Phase 6 — Complete; Ready for Phase 7 (Frontend Foundation)**
+* **Status:** Complete Corporate Actions Engine (Cash Dividends with 15% Filer / 30% Non-Filer WHT & Zakat deductions, Bonus shares zero-cost lots, Rights shares, Stock Splits lot re-basing, and FBR Section 150 tax reports) implemented and verified with 35 passing tests.
 * **Next Steps:**
-  1. Begin Phase 6: Implement Corporate Action event models (Cash Dividends with Filer/Non-Filer withholding tax, Bonus share lot generation, Rights share execution, and Stock Splits lot adjustment re-basing).
+  1. Begin Phase 7: Initialize modern React + Vite + TypeScript frontend, accessible UI primitives, authenticated API HTTP client, and shell navigation layout.

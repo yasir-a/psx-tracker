@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 6: Dividends & Corporate Actions Engine**
+  - Cash dividend accounting with user-selectable Withholding Tax (15% Filer / 30% Non-Filer / Custom rate) and Zakat deduction at source in `backend/src/domain/corporate_actions/dividend.py`.
+  - Bonus shares zero-cost tax lot generation and position expansion in `backend/src/domain/corporate_actions/bonus.py`.
+  - Right shares subscription execution and cash debiting in `backend/src/domain/corporate_actions/rights.py`.
+  - Stock splits and reverse splits lot re-basing strictly preserving total cost basis invariants in `backend/src/domain/corporate_actions/split.py`.
+  - Corporate action orchestration service `CorporateActionService` and REST endpoints (`/api/v1/corporate-actions/dividend`, `/bonus`, `/tax-report/<portfolio_id>`).
+  - Alembic migration (`004_corporate_actions.py`) and `CorporateActionModel`.
+  - Unit and deterministic accounting test suite (35 total passing tests across codebase).
 - **Phase 5: PSX Market Data Layer**
   - Abstract market data provider interface `IMarketDataProvider` in `backend/src/domain/market/provider_interface.py`.
   - PSX security catalog entity `Security` and `MarketQuote` / `HistoricalPrice` value objects in `backend/src/domain/market/`.
