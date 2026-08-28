@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 7: Frontend Foundation (React / Vite / TypeScript)**
+  - React 18 + Vite + TypeScript scaffolding with strict typing and `@/*` path aliases.
+  - Tailwind CSS design system with custom PSX color tokens and typography.
+  - Accessible UI primitives (`Button`, `Input`, `Card`, `Badge`, `Skeleton`).
+  - Authenticated API client with token injection and automatic 401 refresh token interceptor in `frontend/src/services/api.ts`.
+  - Global `AuthContext` and `useAuth()` hook for state persistence in `frontend/src/contexts/AuthContext.tsx`.
+  - Responsive app shell layout (`Sidebar`, `Header`, `Shell`) with Lucide icons.
+  - Registration and Login page views with form validation.
 - **Phase 6: Dividends & Corporate Actions Engine**
   - Cash dividend accounting with user-selectable Withholding Tax (15% Filer / 30% Non-Filer / Custom rate) and Zakat deduction at source in `backend/src/domain/corporate_actions/dividend.py`.
   - Bonus shares zero-cost tax lot generation and position expansion in `backend/src/domain/corporate_actions/bonus.py`.

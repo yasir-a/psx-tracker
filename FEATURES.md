@@ -89,10 +89,10 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `FE-001` | React + Vite + TypeScript Setup | Planned | `GOV-003` | Project scaffolding, path aliases, ESLint, Prettier, strict TS configuration. |
-| `FE-002` | Design System & UI Primitive Components | Planned | `FE-001` | Accessible buttons, inputs, modals, cards, data tables, skeleton loaders. |
-| `FE-003` | API Client & Auth State Provider | Planned | `FE-001`, `AUTH-002` | Axios/Fetch wrapper with interceptors, token refresh, auth context. |
-| `FE-004` | Responsive Layout & Shell Navigation | Planned | `FE-002` | Sidebar, header, responsive mobile drawer, breadcrumbs. |
+| `FE-001` | React + Vite + TypeScript Setup | **Completed** | `GOV-003` | Project scaffolding, path aliases, ESLint, Prettier, strict TS configuration. |
+| `FE-002` | Design System & UI Primitive Components | **Completed** | `FE-001` | Accessible buttons, inputs, modals, cards, data tables, skeleton loaders. |
+| `FE-003` | API Client & Auth State Provider | **Completed** | `FE-001`, `AUTH-002` | Axios/Fetch wrapper with interceptors, token refresh, auth context. |
+| `FE-004` | Responsive Layout & Shell Navigation | **Completed** | `FE-002` | Sidebar, header, responsive mobile drawer, breadcrumbs. |
 
 ---
 
