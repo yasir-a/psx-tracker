@@ -78,10 +78,10 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `CORP-001` | Cash Dividend Accounting | Planned | `ACC-002` | Dividend income tracking, withholding tax accounting, yield on cost. |
-| `CORP-002` | Bonus Shares Allocation | Planned | `ACC-003` | Zero-cost lot generation, cost basis dilution, total quantity adjustments. |
-| `CORP-003` | Right Shares Accounting | Planned | `ACC-003` | Subscription payments, new lot creation, cost averaging. |
-| `CORP-004` | Stock Splits & Reverse Splits | Planned | `ACC-003` | Lot quantity multiplication, cost-basis division, symbol history preservation. |
+| `CORP-001` | Cash Dividend Accounting | **Completed** | `ACC-002` | Dividend income tracking, withholding tax accounting (15% Filer / 30% Non-Filer), yield on cost. |
+| `CORP-002` | Bonus Shares Allocation | **Completed** | `ACC-003` | Zero-cost lot generation, cost basis dilution, total quantity adjustments. |
+| `CORP-003` | Right Shares Accounting | **Completed** | `ACC-003` | Subscription payments, new lot creation, cost averaging. |
+| `CORP-004` | Stock Splits & Reverse Splits | **Completed** | `ACC-003` | Lot quantity multiplication, cost-basis division, symbol history preservation. |
 
 ---
 
