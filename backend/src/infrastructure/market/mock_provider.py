@@ -30,7 +30,7 @@ _MOCK_BASE_PRICES: dict[str, tuple[Decimal, Decimal]] = {
     "LUCK": (Decimal("820.00"), Decimal("810.50")),
     "HUBC": (Decimal("138.50"), Decimal("137.00")),
     "MCB": (Decimal("210.00"), Decimal("208.50")),
-    "FFC": (Decimal("165.20"), Decimal("164.00")),
+    "FFC": (Decimal("552.00"), Decimal("548.00")),
     "HBL": (Decimal("125.00"), Decimal("124.50")),
     "MEBL": (Decimal("220.00"), Decimal("218.00")),
     "PSO": (Decimal("195.00"), Decimal("192.00")),

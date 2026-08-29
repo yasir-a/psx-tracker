@@ -15,7 +15,7 @@ We provide security updates and patches for the following versions:
 
 We take the security of the PSX Portfolio Tracker seriously. If you discover a security vulnerability, please report it responsibly:
 
-* **Email:** Please report security issues directly to the maintainer at `security@psxportfoliotracker.org` (or directly to repository maintainers via private GitHub security advisory).
+* **Email:** Please report security issues directly to the maintainer at `yasir.inspire@gmail.com` (or directly to repository maintainers via private GitHub security advisory).
 * **Information to Include:**
   * Description of the vulnerability
   * Steps to reproduce or proof-of-concept

@@ -81,5 +81,6 @@ def test_full_portfolio_replayer_lifecycle() -> None:
     # Unrealized %: (47,760 / 240,240) * 100 = 19.88%
     assert valuation.unrealized_return_pct == Decimal("19.88")
 
-    # Cash Balance: 500,000 - 400,400 + 4,250 + 179,800 = 283,650
-    assert valuation.cash_balance.amount == Decimal("283650.0000")
+    # Cash = 500k deposit - 400,400 buy + 179,800 sell net = 279,400 PKR (dividends tracked separately)
+    assert valuation.cash_balance.amount == Decimal("279400.0000")
+    assert valuation.total_dividends.amount == Decimal("4250.0000")

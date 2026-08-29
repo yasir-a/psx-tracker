@@ -8,6 +8,7 @@ from typing import Sequence
 from src.config import Settings, get_settings
 from src.domain.market.provider_interface import IMarketDataProvider
 from src.domain.market.quote import MarketQuote
+from src.domain.market.security import Security
 from src.domain.values.money import Money
 from src.infrastructure.cache.redis_client import get_redis_client
 
@@ -70,44 +71,44 @@ class CachedMarketService:
         return quote
 
     def get_bulk_quotes(self, symbols: Sequence[str]) -> dict[str, MarketQuote]:
-        clean_symbols = [s.upper().strip() for s in symbols if s.strip()]
-        if not clean_symbols:
+        syms = [s.upper().strip() for s in symbols]
+        if not syms:
             return {}
 
         client = get_redis_client(self._settings)
-        result: dict[str, MarketQuote] = {}
-        missing: list[str] = []
+        quotes: dict[str, MarketQuote] = {}
+        missing_symbols: list[str] = []
 
-        # 1. Try MGET from Redis
         if client is not None:
             try:
-                keys = [f"mkt:quote:{s}" for s in clean_symbols]
+                keys = [f"mkt:quote:{s}" for s in syms]
                 cached_values = client.mget(keys)
-                for sym, val in zip(clean_symbols, cached_values):
+                for sym, val in zip(syms, cached_values):
                     if val:
-                        result[sym] = self._deserialize_quote(val)
+                        quotes[sym] = self._deserialize_quote(val)
                     else:
-                        missing.append(sym)
+                        missing_symbols.append(sym)
             except Exception:
-                missing = list(clean_symbols)
+                missing_symbols = syms
         else:
-            missing = list(clean_symbols)
+            missing_symbols = syms
 
-        # 2. Fetch missing from provider
-        if missing:
-            fresh_quotes = self._provider.get_bulk_quotes(missing)
-            if client is not None and fresh_quotes:
-                try:
-                    pipe = client.pipeline()
-                    for sym, q in fresh_quotes.items():
-                        pipe.setex(
+        # Fetch missing symbols
+        if missing_symbols:
+            fetched = self._provider.get_bulk_quotes(missing_symbols)
+            for sym, quote in fetched.items():
+                quotes[sym] = quote
+                if client is not None:
+                    try:
+                        client.setex(
                             f"mkt:quote:{sym}",
                             self._settings.MARKET_DATA_CACHE_TTL_SECONDS,
-                            self._serialize_quote(q),
+                            self._serialize_quote(quote),
                         )
-                    pipe.execute()
-                except Exception:
-                    pass
-            result.update(fresh_quotes)
-
-        return result
+                    except Exception:
+                        pass
+        return quotes
+    def list_all_securities(self) -> list[Security]:
+        return self._provider.list_all_securities()
+    def get_security_metadata(self, symbol: str) -> Security | None:
+        return self._provider.get_security_metadata(symbol)

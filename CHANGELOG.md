@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 9: Advanced Analytics & PSX Extensions**
+  - KSE-100 index performance benchmark comparison engine calculating Portfolio Alpha (α) and Beta (β) in `backend/src/domain/analytics/benchmark_engine.py`.
+  - PSX Sector concentration and diversification risk visualizer with >35% single-sector alerts in `backend/src/domain/analytics/sector_analytics.py`.
+  - NCCPL Section 37A Capital Gains Tax (CGT) holding period schedule calculator for Filer (15%) and Non-Filer (30%) in `backend/src/domain/analytics/cgt_calculator.py`.
+  - Analytics application service `AnalyticsService` and REST endpoint `/api/v1/analytics/summary`.
+  - Interactive frontend `AnalyticsView` with KPI cards, dynamic sector weighting progress bars, and NCCPL tax table.
+  - Unit test suite in `backend/tests/unit/test_analytics.py` (38 passing tests).
+- **Phase 8: Portfolio UI & Dashboard**
+  - Interactive Portfolio Dashboard with 5 KPI cards (Total Valuation, Unrealized P&L, Realized Profit, Trading Cash, and Dividend Income).
+  - Interactive Holdings view with live market prices, gain/loss badges, and expandable FIFO open tax lot inspector.
+  - Modal dialog for executing trades (`BUY`, `SELL` with short-selling validation) and cash movements (`CASH_DEPOSIT`, `CASH_WITHDRAWAL`).
+  - Immutable Transaction Ledger view with type filtering.
+  - Corporate Actions view supporting Cash Dividends with Withholding Tax (15% Filer / 30% Non-Filer / Custom rate) and Zakat deduction at source.
+  - FBR Section 150 annual dividend tax return summary report.
+  - Live PSX market quote browser.
+  - Backend `PortfolioAccountingService` and REST endpoints under `/api/v1/portfolio/mine`, `/<id>/valuation`, and `/<id>/transactions`.
 - **Phase 7: Frontend Foundation (React / Vite / TypeScript)**
   - React 18 + Vite + TypeScript scaffolding with strict typing and `@/*` path aliases.
   - Tailwind CSS design system with custom PSX color tokens and typography.

@@ -71,5 +71,5 @@ def test_corporate_actions_full_lifecycle_replay() -> None:
     # Total remaining cost basis: 400 * 300.30 = 120,120 PKR
     assert holding.total_cost_basis.amount == Decimal("120120.0000")
 
-    # Total Dividends recorded: 5,500 PKR
-    assert valuation.total_dividends.amount == Decimal("5500.0000")
+    # Net Dividends recorded: 5,500 gross - 825 WHT = 4,675 PKR
+    assert valuation.total_dividends.amount == Decimal("4675.0000")
