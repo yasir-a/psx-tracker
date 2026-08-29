@@ -67,17 +67,28 @@ class PortfolioReplayer:
             elif tx.transaction_type == TransactionType.CASH_WITHDRAWAL:
                 cash = cash - tx.price_per_share
             elif tx.transaction_type == TransactionType.DIVIDEND_CASH:
-                net_div = tx.gross_amount - tx.total_fees
-                cash = cash + net_div
-                total_dividends = total_dividends + tx.gross_amount
+                # Track dividend income separately from trading cash balance
+                total_dividends = total_dividends + (tx.gross_amount - tx.total_fees)
                 total_fees = total_fees + tx.total_fees
             elif tx.transaction_type == TransactionType.FEE:
                 cash = cash - tx.total_fees
                 total_fees = total_fees + tx.total_fees
-            elif tx.transaction_type in (TransactionType.BUY, TransactionType.BONUS_SHARES, TransactionType.RIGHT_SHARES):
+            elif tx.transaction_type in (
+                TransactionType.BUY,
+                TransactionType.BONUS_SHARES,
+                TransactionType.RIGHT_SHARES,
+                TransactionType.TRANSFER_IN,
+            ):
                 lot = FIFOMatcher.create_lot_from_buy(tx)
                 open_lots_by_symbol.setdefault(sym, []).append(lot)
-                cash = cash - tx.net_amount
+                if tx.transaction_type != TransactionType.TRANSFER_IN:
+                    cash = cash - tx.net_amount
+                total_fees = total_fees + tx.total_fees
+            elif tx.transaction_type == TransactionType.TRANSFER_OUT:
+                # Deplete lots without generating capital gains or modifying trading cash
+                lots = open_lots_by_symbol.get(sym, [])
+                depletions, updated_lots = FIFOMatcher.match_sell(tx, lots)
+                open_lots_by_symbol[sym] = updated_lots
                 total_fees = total_fees + tx.total_fees
             elif tx.transaction_type == TransactionType.SELL:
                 lots = open_lots_by_symbol.get(sym, [])
@@ -106,7 +117,11 @@ class PortfolioReplayer:
                 (lot.remaining_cost_basis for lot in active_lots),
                 Money.zero(base_currency),
             )
-            cost_per_share = (symbol_cost_basis / total_qty_dec).round(4) if total_qty_dec > Decimal("0") else Money.zero(base_currency)
+            cost_per_share = (
+                (symbol_cost_basis / total_qty_dec).round(4)
+                if total_qty_dec > Decimal("0")
+                else Money.zero(base_currency)
+            )
 
             holdings[symbol] = HoldingSnapshot(
                 symbol=symbol,
@@ -118,27 +133,27 @@ class PortfolioReplayer:
 
             total_cost_basis = total_cost_basis + symbol_cost_basis
 
-            market_price = prices.get(symbol, cost_per_share)
-            market_val = (market_price * total_qty_dec).round(4)
-            total_market_val = total_market_val + market_val
+            # Valuation
+            current_price = prices.get(symbol, cost_per_share)
+            symbol_market_val = (current_price * total_qty_dec).round(4)
+            total_market_val = total_market_val + symbol_market_val
 
-        unrealized_gain = (total_market_val - total_cost_basis).round(4)
-        if total_cost_basis.amount > Decimal("0"):
-            unrealized_pct = ((unrealized_gain.amount / total_cost_basis.amount) * Decimal("100")).quantize(
-                Decimal("0.01")
-            )
-        else:
-            unrealized_pct = Decimal("0.00")
+        unrealized_gain = total_market_val - total_cost_basis
+        unrealized_return_pct = (
+            (unrealized_gain.amount / total_cost_basis.amount * Decimal("100")).quantize(Decimal("0.01"))
+            if total_cost_basis.amount > Decimal("0")
+            else Decimal("0.00")
+        )
 
         return PortfolioValuation(
             holdings=holdings,
-            cash_balance=cash.round(4),
-            total_cost_basis=total_cost_basis.round(4),
-            total_market_value=total_market_val.round(4),
+            cash_balance=cash,
+            total_cost_basis=total_cost_basis,
+            total_market_value=total_market_val,
             unrealized_gain=unrealized_gain,
-            unrealized_return_pct=unrealized_pct,
-            realized_gain=realized_gain.round(4),
-            total_fees_paid=total_fees.round(4),
-            total_dividends=total_dividends.round(4),
+            unrealized_return_pct=unrealized_return_pct,
+            realized_gain=realized_gain,
+            total_fees_paid=total_fees,
+            total_dividends=total_dividends,
             depletions=all_depletions,
         )

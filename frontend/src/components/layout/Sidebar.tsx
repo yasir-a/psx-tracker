@@ -1,8 +1,15 @@
 import React from 'react';
-import { LayoutDashboard, Wallet, ArrowLeftRight, TrendingUp, Receipt, FileText } from 'lucide-react';
+import { LayoutDashboard, Wallet, ArrowLeftRight, TrendingUp, Receipt, FileText, BarChart3 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-export type NavItemKey = 'dashboard' | 'holdings' | 'transactions' | 'market' | 'corporate_actions' | 'tax_report';
+export type NavItemKey =
+  | 'dashboard'
+  | 'holdings'
+  | 'transactions'
+  | 'corporate_actions'
+  | 'analytics'
+  | 'market'
+  | 'tax_report';
 
 interface SidebarProps {
   activeTab: NavItemKey;
@@ -14,6 +21,7 @@ const navItems: { key: NavItemKey; label: string; icon: React.FC<{ className?: s
   { key: 'holdings', label: 'Holdings', icon: Wallet },
   { key: 'transactions', label: 'Transaction Ledger', icon: ArrowLeftRight },
   { key: 'corporate_actions', label: 'Corporate Actions', icon: Receipt },
+  { key: 'analytics', label: 'Analytics & KSE-100', icon: BarChart3 },
   { key: 'market', label: 'PSX Market Data', icon: TrendingUp },
   { key: 'tax_report', label: 'FBR Tax Report', icon: FileText },
 ];
@@ -59,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
 
       {/* Footer Info */}
       <div className="p-4 border-t border-gray-100 text-xs text-gray-400 text-center">
-        v0.1.0 • FIFO Lot Engine
+        v0.1.0 • KSE-100 Engine
       </div>
     </aside>
   );

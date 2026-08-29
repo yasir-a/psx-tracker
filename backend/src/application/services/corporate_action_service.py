@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from decimal import Decimal
-from uuid import UUID, uuid4
+from typing import Any
+from uuid import UUID
 from sqlalchemy.orm import Session
 
-from src.api.errors import AppError, NotFoundError, ValidationError
+from src.api.errors import ValidationError
 from src.domain.accounting.portfolio_replayer import PortfolioReplayer
 from src.domain.accounting.transaction import Transaction
 from src.domain.accounting.transaction_type import TransactionType
 from src.domain.corporate_actions.bonus import calculate_bonus_shares
 from src.domain.corporate_actions.corporate_action_type import CorporateActionType
 from src.domain.corporate_actions.dividend import calculate_dividend
-from src.domain.corporate_actions.rights import calculate_rights_subscription
-from src.domain.corporate_actions.split import rebase_lots_for_split
 from src.domain.corporate_actions.tax_status import TaxStatus
 from src.domain.values.money import Money
 from src.domain.values.quantity import Quantity
@@ -61,7 +60,7 @@ class CorporateActionService:
 
         exec_time = executed_at or datetime.now(timezone.utc)
 
-        # 1. Record Transaction in ledger
+        # 1. Record Transaction in ledger (tracks dividend income & WHT/Zakat separately)
         tx = Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.DIVIDEND_CASH,
@@ -75,13 +74,7 @@ class CorporateActionService:
         )
         self._tx_repo.save(tx)
 
-        # 2. Update Cash Balance
-        portfolio = self._portfolio_repo.get_by_id(portfolio_id)
-        if portfolio and portfolio.cash_balance:
-            new_cash = portfolio.cash_balance.amount + calc.net_dividend_credited.amount
-            self._portfolio_repo.update_cash_balance(portfolio_id, new_cash)
-
-        # 3. Log Corporate Action Record
+        # 2. Log Corporate Action Record for FBR Tax Audit
         ca_log = CorporateActionModel(
             portfolio_id=portfolio_id,
             symbol=sym,
@@ -105,7 +98,7 @@ class CorporateActionService:
             "wht_rate_percent": float(calc.wht_rate_pct),
             "wht_deducted": float(calc.wht_amount.amount),
             "zakat_deducted": float(calc.zakat_amount.amount),
-            "net_credited": float(calc.net_dividend_credited.amount),
+            "net_dividend_income": float(calc.net_dividend_credited.amount),
         }
 
     def apply_bonus_shares(

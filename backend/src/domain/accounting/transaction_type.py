@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from enum import Enum
 
-
 class TransactionType(str, Enum):
     """Supported ledger transaction and corporate action types."""
 
@@ -15,3 +14,5 @@ class TransactionType(str, Enum):
     RIGHT_SHARES = "RIGHT_SHARES"
     STOCK_SPLIT = "STOCK_SPLIT"
     FEE = "FEE"
+    TRANSFER_OUT = "TRANSFER_OUT"  # Share transfer out of an account
+    TRANSFER_IN = "TRANSFER_IN"    # Share transfer into an account with preserved cost basis

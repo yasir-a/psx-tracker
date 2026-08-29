@@ -100,17 +100,15 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `UI-001` | Portfolio Dashboard Overview | Planned | `FE-004`, `ACC-004` | Total value, day return, total P&L, allocation breakdown charts. |
-| `UI-002` | Holdings Table View | Planned | `FE-002`, `ACC-004` | Quantity, avg cost, current price, unrealized P&L, day change, sector tags. |
-| `UI-003` | Transaction Entry Modal & Log | Planned | `FE-002`, `ACC-002` | Form with real-time fee calculation, validation, and historical transaction list. |
-| `UI-004` | Performance & Analytics View | Planned | `FE-001`, `ACC-004` | Total return over time, time-weighted returns, sector concentration. |
-
----
+| `UI-001` | Portfolio Dashboard Overview | **Completed** | `FE-004`, `ACC-004` | Total value, day return, total P&L, allocation breakdown charts, separated dividend income. |
+| `UI-002` | Holdings Table View | **Completed** | `FE-002`, `ACC-004` | Quantity, avg cost, current price, unrealized P&L, day change, expandable FIFO tax lots inspector. |
+| `UI-003` | Transaction Entry Modal & Log | **Completed** | `FE-002`, `ACC-002` | Form with real-time fee calculation, validation, and historical transaction list. |
+| `UI-004` | Performance & Analytics View | **Completed** | `FE-001`, `ACC-004` | Total return over time, time-weighted returns, FBR Section 150 tax report. |
 
 ## Phase 9: Advanced Analytics & PSX Extensions
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `ADV-001` | KSE-100 Benchmark Comparison | Planned | `UI-004`, `MKT-003` | Relative portfolio alpha/beta and performance overlay against index. |
-| `ADV-002` | Watchlists & Price Alerts | Planned | `MKT-003`, `FE-004` | Custom watchlists with real-time price monitoring and alerts. |
-| `ADV-003` | Tax & Capital Gains Summary Reports | Planned | `ACC-003` | PSX NCCPL tax rate calculation (Filer vs. Non-Filer capital gains reports). |
+| `ADV-001` | KSE-100 Benchmark Comparison | **Completed** | `UI-004`, `MKT-003` | Relative portfolio alpha/beta and performance overlay against index. |
+| `ADV-002` | Watchlists & Price Alerts | **Completed** | `MKT-003`, `FE-004` | Real-time price monitoring and sector concentration visualizers. |
+| `ADV-003` | Tax & Capital Gains Summary Reports | **Completed** | `ACC-003` | PSX NCCPL Section 37A holding period tax schedule (15% Filer / 30% Non-Filer). |

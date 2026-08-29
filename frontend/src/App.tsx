@@ -8,6 +8,7 @@ import { HoldingsView } from './components/features/holdings/HoldingsView';
 import { TransactionsView } from './components/features/transactions/TransactionsView';
 import { TransactionModal } from './components/features/transactions/TransactionModal';
 import { CorporateActionsView } from './components/features/corporate_actions/CorporateActionsView';
+import { AnalyticsView } from './components/features/analytics/AnalyticsView';
 import { MarketView } from './components/features/market/MarketView';
 import { TaxReportView } from './components/features/tax/TaxReportView';
 import { CreatePortfolioModal } from './components/features/portfolio/CreatePortfolioModal';
@@ -118,6 +119,8 @@ const MainApp: React.FC = () => {
                 onSuccess={() => refreshValuation(activePortfolioId)}
               />
             )}
+
+            {activeTab === 'analytics' && <AnalyticsView portfolioId={activePortfolioId} />}
 
             {activeTab === 'market' && <MarketView />}
 
