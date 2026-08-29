@@ -26,11 +26,8 @@ def create_app(settings: Settings | None = None) -> Flask:
         format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
     )
 
-    # Initialize Database & create SQLite tables on startup
+    # Initialize Database & Teardown
     init_db(app, app_settings)
-    if app_settings.DATABASE_URL.startswith("sqlite"):
-        engine = get_engine(app_settings)
-        Base.metadata.create_all(bind=engine)
 
     # Register Middlewares & Error Handlers
     register_middleware(app)
