@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
 
     # Database Settings
-    DATABASE_URL: str = "postgresql://psx_user:psx_password@localhost:5432/psx_portfolio"
+    DATABASE_URL: str = "postgresql+psycopg://psx_user:Dai7aWu7ae@localhost:5432/psx_portfolio"
 
     # Redis Settings
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 class DevelopmentSettings(Settings):
     ENV: Literal["development", "testing", "production"] = "development"
     DEBUG: bool = True
-    DATABASE_URL: str = "sqlite:///psx_dev.db"
+    DATABASE_URL: str = "postgresql+psycopg://psx_user:Dai7aWu7ae@localhost:5432/psx_portfolio"
 
 class TestingSettings(Settings):
     __test__ = False

@@ -43,18 +43,90 @@ psx-tracker/
 
 ---
 
+## Local Development & Setup
+
+### 1. Prerequisites
+* **Python**: 3.11+
+* **Node.js**: 18+ & npm
+* **PostgreSQL**: 15+ (installed locally or via lightweight installer)
+
+---
+
+### 2. PostgreSQL Local Database Setup (Easy Windows Guide)
+
+You can set up local PostgreSQL in one of two simple ways:
+
+#### Method A: Direct Windows Installer (Recommended for Local Dev)
+1. Download the official installer from [PostgreSQL Windows Downloads (EDB)](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads).
+2. Run the installer and choose a password for the default `postgres` user (e.g. `psx_password` or your preferred password).
+3. Open **SQL Shell (psql)** or **pgAdmin** from your Windows Start Menu and run:
+   ```sql
+   CREATE DATABASE psx_portfolio;
+   CREATE USER psx_user WITH ENCRYPTED PASSWORD 'psx_password';
+   GRANT ALL PRIVILEGES ON DATABASE psx_portfolio TO psx_user;
+   ALTER DATABASE psx_portfolio OWNER TO psx_user;
+   ```
+4. Verify your local connection string in your `.env` file:
+   ```env
+   DATABASE_URL=postgresql://psx_user:psx_password@localhost:5432/psx_portfolio
+   ```
+
+#### Method B: Standalone Windows Portable / Scoop / Winget
+Using Windows package manager:
+```powershell
+winget install PostgreSQL.PostgreSQL
+```
+
+---
+
+### 3. Running the Backend
+
+```powershell
+# 1. Activate Python virtual environment
+.venv\Scripts\Activate.ps1
+
+# 2. Install backend dependencies
+pip install -r backend/requirements.txt
+pip install -r backend/requirements-dev.txt
+
+# 3. Apply database migrations
+cd backend
+alembic upgrade head
+cd ..
+
+# 4. Start Flask server (runs on http://127.0.0.1:5000)
+python backend/wsgi.py
+```
+
+---
+
+### 4. Running the Frontend
+
+```powershell
+# 1. Navigate to frontend
+cd frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Start Vite dev server (runs on http://localhost:5173)
+npm run dev
+```
+
+---
+
 ## Development Phases
 
-* **Phase 0: Repository & Governance** *(In Progress)*
-* **Phase 1: Backend Foundation** *(Flask structure, config, logging, health check)*
-* **Phase 2: Database & Migrations** *(PostgreSQL, models, repositories)*
-* **Phase 3: Authentication & Users** *(JWT/Session, user isolation, security controls)*
-* **Phase 4: Portfolio Accounting Domain** *(FIFO lots, ledger, transactions, P&L)*
-* **Phase 5: PSX Market Data** *(Decoupled provider abstraction, daily/historical prices)*
-* **Phase 6: Dividends & Corporate Actions** *(Bonus, rights, splits, cash dividends)*
-* **Phase 7: Frontend Foundation** *(React, Vite, TS, routing, UI library)*
-* **Phase 8: Portfolio UI** *(Dashboard, holdings, transaction entry, analytics)*
-* **Phase 9: Advanced Analytics & Reporting** *(Benchmarks, alerts, tax reports)*
+* **Phase 0: Repository & Governance** *(Completed)*
+* **Phase 1: Backend Foundation** *(Completed)*
+* **Phase 2: Database & Migrations** *(Completed)*
+* **Phase 3: Authentication & Users** *(Completed)*
+* **Phase 4: Portfolio Accounting Domain** *(Completed)*
+* **Phase 5: PSX Market Data** *(Completed)*
+* **Phase 6: Dividends & Corporate Actions** *(Completed)*
+* **Phase 7: Frontend Foundation** *(Completed)*
+* **Phase 8: Portfolio UI & Dashboard** *(Next)*
+* **Phase 9: Advanced Analytics & Reporting** *(Planned)*
 
 ---
 
