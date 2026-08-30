@@ -19,10 +19,15 @@ def test_full_portfolio_trade_lifecycle_and_valuation(client: FlaskClient) -> No
     auth_token = reg_res.json["tokens"]["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}
 
-    # 2. Get User's Default Portfolio
-    mine_res = client.get("/api/v1/portfolio/mine", headers=headers)
-    assert mine_res.status_code == 200
-    portfolio_id = mine_res.json["portfolios"][0]["id"]
+    # 2. Create Initial Broker Account
+    create_res = client.post(
+        "/api/v1/portfolio/create",
+        headers=headers,
+        data=json.dumps({"name": "Primary Broker Account"}),
+        content_type="application/json",
+    )
+    assert create_res.status_code == 201
+    portfolio_id = create_res.json["id"]
 
     # 3. Deposit PKR 500,000 Cash
     dep_res = client.post(

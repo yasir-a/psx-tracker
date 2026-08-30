@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID
-from flask import Blueprint, g, jsonify, request, Response
+
+from flask import Blueprint, Response, g, jsonify, request
 
 from src.api.decorators import jwt_required
 from src.api.errors import ValidationError
@@ -48,6 +49,18 @@ def create_portfolio() -> tuple[Response, int]:
     return jsonify(portfolio), 201
 
 
+@portfolio_bp.route("/<string:portfolio_id>", methods=["DELETE"])
+@jwt_required
+def delete_portfolio(portfolio_id: str) -> tuple[Response, int]:
+    """Delete a portfolio account if it contains no securities."""
+    pid = UUID(portfolio_id)
+    service = _get_service()
+    service.delete_portfolio(pid, g.current_user_id)
+    session = get_db_session()
+    session.commit()
+    return jsonify({"message": "Account deleted successfully"}), 200
+
+
 @portfolio_bp.route("/consolidated-valuation", methods=["GET"])
 @jwt_required
 def get_consolidated_valuation() -> tuple[Response, int]:
@@ -64,27 +77,23 @@ def get_valuation(portfolio_id: str) -> tuple[Response, int]:
     pid = UUID(portfolio_id)
     service = _get_service()
     service.verify_ownership(pid, g.current_user_id)
-
     valuation = service.get_portfolio_valuation(pid)
     return jsonify(valuation), 200
 
-
 @portfolio_bp.route("/<string:portfolio_id>/transactions", methods=["GET"])
 @jwt_required
-def get_transactions(portfolio_id: str) -> tuple[Response, int]:
-    """Fetch chronological transaction ledger history for a portfolio."""
+def list_transactions(portfolio_id: str) -> tuple[Response, int]:
+    """Get chronologically ordered list of all transaction records for a portfolio."""
     pid = UUID(portfolio_id)
     service = _get_service()
     service.verify_ownership(pid, g.current_user_id)
-
-    history = service.get_transactions_history(pid)
-    return jsonify({"transactions": history}), 200
-
+    txs = service.get_portfolio_transactions(pid)
+    return jsonify({"transactions": txs}), 200
 
 @portfolio_bp.route("/<string:portfolio_id>/transactions", methods=["POST"])
 @jwt_required
-def create_transaction(portfolio_id: str) -> tuple[Response, int]:
-    """Execute and record a trade or cash movement."""
+def record_transaction(portfolio_id: str) -> tuple[Response, int]:
+    """Record a trade, cash deposit, or fee event."""
     pid = UUID(portfolio_id)
     service = _get_service()
     service.verify_ownership(pid, g.current_user_id)
@@ -95,65 +104,90 @@ def create_transaction(portfolio_id: str) -> tuple[Response, int]:
         raise ValidationError("Missing transaction_type")
 
     try:
-        tx_type = TransactionType(tx_type_str.upper())
-        symbol = data.get("symbol")
-        qty = Decimal(str(data.get("quantity", 0)))
-        price = Decimal(str(data.get("price_per_share", 0)))
-        fee = Decimal(str(data.get("brokerage_fee", 0)))
-        notes = data.get("notes")
-        exec_at = datetime.fromisoformat(data["executed_at"]) if "executed_at" in data else None
-    except Exception as e:
-        raise ValidationError(f"Invalid transaction payload: {str(e)}")
+        tx_type = TransactionType(tx_type_str)
+    except ValueError:
+        raise ValidationError(f"Invalid transaction_type: {tx_type_str}")
 
-    result = service.record_transaction(
+    exec_at = None
+    if data.get("executed_at"):
+        try:
+            exec_at = datetime.fromisoformat(data["executed_at"].replace("Z", "+00:00"))
+        except Exception:
+            exec_at = None
+
+    tx = service.record_transaction(
         portfolio_id=pid,
         transaction_type=tx_type,
-        symbol=symbol,
-        quantity=qty,
-        price_per_share=price,
-        brokerage_fee=fee,
+        symbol=data.get("symbol"),
+        quantity=Decimal(str(data.get("quantity", 0))),
+        price_per_share=Decimal(str(data.get("price_per_share", 0))),
+        brokerage_fee=Decimal(str(data.get("brokerage_fee", 0))),
+        regulatory_fee=Decimal(str(data.get("regulatory_fee", 0))),
         executed_at=exec_at,
-        notes=notes,
+        notes=data.get("notes"),
     )
     session = get_db_session()
     session.commit()
+    return jsonify(tx), 201
 
-    return jsonify(result), 201
+@portfolio_bp.route("/<string:portfolio_id>/transactions/<string:transaction_id>", methods=["PUT"])
+@jwt_required
+def update_transaction(portfolio_id: str, transaction_id: str) -> tuple[Response, int]:
+    """Edit an existing transaction and recalculate lots."""
+    pid = UUID(portfolio_id)
+    txid = UUID(transaction_id)
+    data = request.get_json(silent=True) or {}
 
+    service = _get_service()
+    updated = service.update_transaction(
+        portfolio_id=pid,
+        transaction_id=txid,
+        user_id=g.current_user_id,
+        symbol=data.get("symbol"),
+        quantity=Decimal(str(data.get("quantity", 0))),
+        price_per_share=Decimal(str(data.get("price_per_share", 0))),
+        brokerage_fee=Decimal(str(data.get("brokerage_fee", 0))),
+        notes=data.get("notes"),
+    )
+    session = get_db_session()
+    session.commit()
+    return jsonify(updated), 200
+
+@portfolio_bp.route("/<string:portfolio_id>/transactions/<string:transaction_id>", methods=["DELETE"])
+@jwt_required
+def delete_transaction(portfolio_id: str, transaction_id: str) -> tuple[Response, int]:
+    """Delete a transaction and recalculate lots."""
+    pid = UUID(portfolio_id)
+    txid = UUID(transaction_id)
+    service = _get_service()
+    service.delete_transaction(pid, txid, g.current_user_id)
+    session = get_db_session()
+    session.commit()
+    return jsonify({"message": "Transaction deleted successfully"}), 200
 
 @portfolio_bp.route("/transfer-shares", methods=["POST"])
 @jwt_required
 def transfer_shares() -> tuple[Response, int]:
-    """Transfer shares between accounts (e.g. Darson -> CDC IAS) preserving FIFO cost basis."""
+    """Transfer shares between user accounts (e.g. Darson -> CDC IAS) with preserved FIFO cost basis."""
     data = request.get_json(silent=True) or {}
-    from_pid_str = data.get("from_portfolio_id")
-    to_pid_str = data.get("to_portfolio_id")
+    from_pid = data.get("from_portfolio_id")
+    to_pid = data.get("to_portfolio_id")
     symbol = data.get("symbol")
-    qty_val = data.get("quantity")
+    quantity = data.get("quantity")
 
-    if not from_pid_str or not to_pid_str or not symbol or qty_val is None:
+    if not from_pid or not to_pid or not symbol or not quantity:
         raise ValidationError("Missing required fields: from_portfolio_id, to_portfolio_id, symbol, quantity")
 
-    try:
-        from_pid = UUID(from_pid_str)
-        to_pid = UUID(to_pid_str)
-        qty = Decimal(str(qty_val))
-        cdc_fee = Decimal(str(data.get("cdc_transfer_fee", 0)))
-        notes = data.get("notes")
-    except Exception as e:
-        raise ValidationError(f"Invalid transfer data: {str(e)}")
-
     service = _get_service()
-    result = service.transfer_shares_between_portfolios(
+    res = service.transfer_shares_between_portfolios(
         user_id=g.current_user_id,
-        from_portfolio_id=from_pid,
-        to_portfolio_id=to_pid,
+        from_portfolio_id=UUID(from_pid),
+        to_portfolio_id=UUID(to_pid),
         symbol=symbol,
-        quantity=qty,
-        cdc_transfer_fee=cdc_fee,
-        notes=notes,
+        quantity=Decimal(str(quantity)),
+        cdc_transfer_fee=Decimal(str(data.get("cdc_transfer_fee", 0))),
+        notes=data.get("notes"),
     )
     session = get_db_session()
     session.commit()
-
-    return jsonify(result), 200
+    return jsonify(res), 200

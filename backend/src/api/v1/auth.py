@@ -12,13 +12,9 @@ from src.infrastructure.db.session import get_db_session
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-
 def _get_auth_service() -> AuthService:
     session = get_db_session()
-    user_repo = PgUserRepository(session)
-    portfolio_repo = PgPortfolioRepository(session)
-    return AuthService(user_repo, portfolio_repo)
-
+    return AuthService(session)
 
 @auth_bp.route("/register", methods=["POST"])
 @rate_limit(max_requests=10, window_seconds=60)
@@ -85,7 +81,7 @@ def login() -> tuple[Response, int]:
 
 @auth_bp.route("/refresh", methods=["POST"])
 def refresh() -> tuple[Response, int]:
-    """Refresh expired access token using refresh token."""
+    """Exchange a valid refresh token for a fresh access token."""
     data = request.get_json(silent=True) or {}
     refresh_token = data.get("refresh_token")
     if not refresh_token:

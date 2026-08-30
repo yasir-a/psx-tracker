@@ -39,6 +39,8 @@ export interface PortfolioHeader {
   id: string;
   name: string;
   currency: string;
+  is_consolidated?: boolean;
+  account_count?: number;
 }
 
 export interface PortfolioValuationResponse {
@@ -47,10 +49,24 @@ export interface PortfolioValuationResponse {
   holdings: Holding[];
 }
 
+export type TransactionTypeUnion =
+  | 'BUY'
+  | 'SELL'
+  | 'CASH_DEPOSIT'
+  | 'CASH_WITHDRAWAL'
+  | 'DIVIDEND_CASH'
+  | 'BONUS_SHARES'
+  | 'RIGHT_SHARES'
+  | 'STOCK_SPLIT'
+  | 'FEE'
+  | 'TRANSFER_OUT'
+  | 'TRANSFER_IN';
+
 export interface TransactionRecord {
   id: string;
   portfolio_id: string;
-  transaction_type: 'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'DIVIDEND_CASH' | 'BONUS_SHARES' | 'RIGHT_SHARES' | 'STOCK_SPLIT' | 'FEE';
+  portfolio_name?: string;
+  transaction_type: TransactionTypeUnion;
   symbol: string | null;
   quantity: number;
   price_per_share: number;

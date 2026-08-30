@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
+import { Sidebar, NavItemKey } from './Sidebar';
 import { Header } from './Header';
-import { NavItemKey, Sidebar } from './Sidebar';
 import { PortfolioListItem } from '../../services/portfolioService';
 
 interface ShellProps {
+  children: (activeTab: NavItemKey) => React.ReactNode;
   portfolios: PortfolioListItem[];
   activePortfolioId: string;
   onSelectPortfolio: (id: string) => void;
   onOpenCreatePortfolio: () => void;
   onOpenTransferModal: () => void;
-  children: (activeTab: NavItemKey) => React.ReactNode;
+  onDeletePortfolio?: (id: string, name: string) => void;
 }
 
 export const Shell: React.FC<ShellProps> = ({
+  children,
   portfolios,
   activePortfolioId,
   onSelectPortfolio,
   onOpenCreatePortfolio,
   onOpenTransferModal,
-  children,
+  onDeletePortfolio,
 }) => {
   const [activeTab, setActiveTab] = useState<NavItemKey>('dashboard');
 
@@ -35,7 +37,9 @@ export const Shell: React.FC<ShellProps> = ({
           onSelectPortfolio={onSelectPortfolio}
           onOpenCreatePortfolio={onOpenCreatePortfolio}
           onOpenTransferModal={onOpenTransferModal}
+          onDeletePortfolio={onDeletePortfolio}
         />
+
         <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
           {children(activeTab)}
         </main>
