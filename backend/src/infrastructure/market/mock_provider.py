@@ -3,10 +3,9 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Sequence
-
 from src.domain.market.provider_interface import IMarketDataProvider
 from src.domain.market.quote import HistoricalPrice, MarketQuote
-from src.domain.market.security import Security, SecuritySector, SecurityType
+from src.domain.market.security import Security, SecuritySector
 from src.domain.values.money import Money
 
 
@@ -21,6 +20,27 @@ _DEFAULT_PSX_SECURITIES = [
     Security("HBL", "Habib Bank Limited", SecuritySector.COMMERCIAL_BANKS.value),
     Security("MEBL", "Meezan Bank Limited", SecuritySector.COMMERCIAL_BANKS.value),
     Security("PSO", "Pakistan State Oil Company Limited", SecuritySector.OIL_AND_GAS_MARKETING.value),
+    Security("EFERT", "Engro Fertilizers Limited", SecuritySector.FERTILIZER.value),
+    Security("UBL", "United Bank Limited", SecuritySector.COMMERCIAL_BANKS.value),
+    Security("BAFL", "Bank Alfalah Limited", SecuritySector.COMMERCIAL_BANKS.value),
+    Security("MARI", "Mari Petroleum Company Limited", SecuritySector.OIL_AND_GAS_EXPLORATION.value),
+    Security("PPL", "Pakistan Petroleum Limited", SecuritySector.OIL_AND_GAS_EXPLORATION.value),
+    Security("DGKC", "D.G. Khan Cement Company Limited", SecuritySector.CEMENT.value),
+    Security("FCCL", "Fauji Cement Company Limited", SecuritySector.CEMENT.value),
+    Security("MLCF", "Maple Leaf Cement Factory Limited", SecuritySector.CEMENT.value),
+    Security("ATRL", "Attock Refinery Limited", SecuritySector.REFINERY.value),
+    Security("PRL", "Pakistan Refinery Limited", SecuritySector.REFINERY.value),
+    Security("NRL", "National Refinery Limited", SecuritySector.REFINERY.value),
+    Security("ILP", "Interloop Limited", SecuritySector.TEXTILE_COMPOSITE.value),
+    Security("NML", "Nishat Mills Limited", SecuritySector.TEXTILE_COMPOSITE.value),
+    Security("NATF", "National Foods Limited", SecuritySector.FOOD_AND_PERSONAL_CARE.value),
+    Security("NESTLE", "Nestle Pakistan Limited", SecuritySector.FOOD_AND_PERSONAL_CARE.value),
+    Security("LOTCHEM", "Lotte Chemical Pakistan Limited", SecuritySector.CHEMICAL.value),
+    Security("EPCL", "Engro Polymer & Chemicals Limited", SecuritySector.CHEMICAL.value),
+    Security("AIRLINK", "Air Link Communication Limited", SecuritySector.TECHNOLOGY_AND_COMMUNICATION.value),
+    Security("TRG", "TRG Pakistan Limited", SecuritySector.TECHNOLOGY_AND_COMMUNICATION.value),
+    Security("AVN", "Avanceon Limited", SecuritySector.TECHNOLOGY_AND_COMMUNICATION.value),
+    Security("KAPCO", "Kot Addu Power Company Limited", SecuritySector.POWER_GENERATION_AND_DISTRIBUTION.value),
 ]
 
 _MOCK_BASE_PRICES: dict[str, tuple[Decimal, Decimal]] = {
@@ -34,6 +54,27 @@ _MOCK_BASE_PRICES: dict[str, tuple[Decimal, Decimal]] = {
     "HBL": (Decimal("125.00"), Decimal("124.50")),
     "MEBL": (Decimal("220.00"), Decimal("218.00")),
     "PSO": (Decimal("195.00"), Decimal("192.00")),
+    "EFERT": (Decimal("172.00"), Decimal("170.50")),
+    "UBL": (Decimal("280.00"), Decimal("276.00")),
+    "BAFL": (Decimal("65.50"), Decimal("64.80")),
+    "MARI": (Decimal("2450.00"), Decimal("2420.00")),
+    "PPL": (Decimal("118.00"), Decimal("116.50")),
+    "DGKC": (Decimal("85.00"), Decimal("84.20")),
+    "FCCL": (Decimal("24.50"), Decimal("24.10")),
+    "MLCF": (Decimal("42.00"), Decimal("41.50")),
+    "ATRL": (Decimal("380.00"), Decimal("375.00")),
+    "PRL": (Decimal("32.50"), Decimal("31.80")),
+    "NRL": (Decimal("295.00"), Decimal("291.00")),
+    "ILP": (Decimal("78.00"), Decimal("77.20")),
+    "NML": (Decimal("82.00"), Decimal("81.00")),
+    "NATF": (Decimal("185.00"), Decimal("183.00")),
+    "NESTLE": (Decimal("7200.00"), Decimal("7150.00")),
+    "LOTCHEM": (Decimal("21.50"), Decimal("21.20")),
+    "EPCL": (Decimal("38.00"), Decimal("37.60")),
+    "AIRLINK": (Decimal("120.00"), Decimal("118.50")),
+    "TRG": (Decimal("54.00"), Decimal("53.20")),
+    "AVN": (Decimal("62.00"), Decimal("61.00")),
+    "KAPCO": (Decimal("34.50"), Decimal("34.10")),
 }
 
 
@@ -62,7 +103,7 @@ class MockMarketDataProvider(IMarketDataProvider):
         )
 
     def get_bulk_quotes(self, symbols: Sequence[str]) -> dict[str, MarketQuote]:
-        return {s.upper().strip(): q for s in symbols if (q := self.get_quote(s)) is not None}
+        return {s.upper().strip(): self.get_quote(s) for s in symbols if self.get_quote(s) is not None}
 
     def get_historical_prices(
         self,
@@ -71,23 +112,23 @@ class MockMarketDataProvider(IMarketDataProvider):
         end_date: date,
     ) -> list[HistoricalPrice]:
         sym = symbol.upper().strip()
-        base_p, _ = _MOCK_BASE_PRICES.get(sym, (Decimal("100.00"), Decimal("98.00")))
-        prices: list[HistoricalPrice] = []
+        base_price = _MOCK_BASE_PRICES.get(sym, (Decimal("100.00"), Decimal("98.00")))[0]
+        results: list[HistoricalPrice] = []
+        curr = start_date
 
-        cur_date = start_date
-        while cur_date <= end_date:
-            # Skip weekends (approximate PSX trading days)
-            if cur_date.weekday() < 5:
-                prices.append(
+        while curr <= end_date:
+            if curr.weekday() < 5:  # Monday to Friday
+                results.append(
                     HistoricalPrice(
                         symbol=sym,
-                        trade_date=cur_date,
-                        open_price=Money(base_p - Decimal("1.50"), "PKR"),
-                        high_price=Money(base_p + Decimal("2.00"), "PKR"),
-                        low_price=Money(base_p - Decimal("2.00"), "PKR"),
-                        close_price=Money(base_p, "PKR"),
-                        volume=150000,
+                        trade_date=curr,
+                        open_price=Money(base_price, "PKR"),
+                        high_price=Money(base_price, "PKR"),
+                        low_price=Money(base_price, "PKR"),
+                        close_price=Money(base_price, "PKR"),
+                        volume=100000,
                     )
                 )
-            cur_date += timedelta(days=1)
-        return prices
+            curr += timedelta(days=1)
+
+        return results

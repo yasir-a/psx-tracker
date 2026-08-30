@@ -20,6 +20,10 @@ export const portfolioService = {
     return res.data;
   },
 
+  async deletePortfolio(portfolioId: string): Promise<void> {
+    await apiClient.delete(`/portfolio/${portfolioId}`);
+  },
+
   async getValuation(portfolioId: string): Promise<PortfolioValuationResponse> {
     if (portfolioId === 'consolidated') {
       const res = await apiClient.get<PortfolioValuationResponse>('/portfolio/consolidated-valuation');
@@ -30,11 +34,29 @@ export const portfolioService = {
   },
 
   async getTransactions(portfolioId: string): Promise<TransactionRecord[]> {
+    const myPorts = await this.getMyPortfolios();
+    const portMap = new Map(myPorts.portfolios.map((p) => [p.id, p.name]));
+
     if (portfolioId === 'consolidated') {
-      return [];
+      const allTxs = await Promise.all(
+        myPorts.portfolios.map((p) =>
+          apiClient.get<{ transactions: TransactionRecord[] }>(`/portfolio/${p.id}/transactions`)
+        )
+      );
+      const combined = allTxs.flatMap((res) =>
+        res.data.transactions.map((tx) => ({
+          ...tx,
+          portfolio_name: portMap.get(tx.portfolio_id) || 'Account',
+        }))
+      );
+      return combined.sort((a, b) => new Date(b.executed_at).getTime() - new Date(a.executed_at).getTime());
     }
+
     const res = await apiClient.get<{ transactions: TransactionRecord[] }>(`/portfolio/${portfolioId}/transactions`);
-    return res.data.transactions;
+    return res.data.transactions.map((tx) => ({
+      ...tx,
+      portfolio_name: portMap.get(tx.portfolio_id) || 'Account',
+    }));
   },
 
   async createTransaction(
@@ -45,10 +67,33 @@ export const portfolioService = {
       quantity?: number;
       price_per_share?: number;
       brokerage_fee?: number;
+      executed_at?: string;
       notes?: string;
     }
   ): Promise<TransactionRecord> {
     const res = await apiClient.post<TransactionRecord>(`/portfolio/${portfolioId}/transactions`, payload);
+    return res.data;
+  },
+
+  async deleteTransaction(portfolioId: string, transactionId: string): Promise<void> {
+    await apiClient.delete(`/portfolio/${portfolioId}/transactions/${transactionId}`);
+  },
+
+  async updateTransaction(
+    portfolioId: string,
+    transactionId: string,
+    payload: {
+      symbol?: string;
+      quantity?: number;
+      price_per_share?: number;
+      brokerage_fee?: number;
+      notes?: string;
+    }
+  ): Promise<TransactionRecord> {
+    const res = await apiClient.put<TransactionRecord>(
+      `/portfolio/${portfolioId}/transactions/${transactionId}`,
+      payload
+    );
     return res.data;
   },
 

@@ -49,6 +49,14 @@ class PgTransactionRepository(ITransactionRepository):
                 notes=transaction.notes,
             )
             self._session.add(model)
+        else:
+            model.symbol = transaction.symbol
+            model.quantity = transaction.quantity.value
+            model.price_per_share = transaction.price_per_share.amount
+            model.brokerage_fee = transaction.brokerage_fee.amount
+            model.regulatory_fee = transaction.regulatory_fee.amount
+            model.notes = transaction.notes
+
         self._session.flush()
         return self._to_entity(model)
 
@@ -64,3 +72,12 @@ class PgTransactionRepository(ITransactionRepository):
         )
         models = self._session.execute(stmt).scalars().all()
         return [self._to_entity(m) for m in models]
+    
+    def delete(self, transaction_id: UUID) -> bool:
+        model = self._session.get(TransactionModel, transaction_id)
+        if model:
+            # Also delete associated tax lots
+            self._session.query(TaxLotModel).filter_by(transaction_id=transaction_id).delete()
+            self._session.delete(model)
+            return True
+        return False

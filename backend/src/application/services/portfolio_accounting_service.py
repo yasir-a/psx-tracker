@@ -19,7 +19,7 @@ from src.infrastructure.market.provider_factory import get_market_service
 
 
 class PortfolioAccountingService:
-    """Service managing multi-account management, share transfers, and consolidated valuation."""
+    """Application service for portfolio valuation, transaction replay, and multi-broker accounts."""
 
     def __init__(self, session: Session) -> None:
         self._session = session
@@ -29,18 +29,24 @@ class PortfolioAccountingService:
 
     def get_user_portfolios(self, user_id: UUID) -> list[dict[str, Any]]:
         portfolios = self._portfolio_repo.get_by_user_id(user_id)
-        return [
-            {
+        results = []
+
+        for p in portfolios:
+            txs = self._tx_repo.get_by_portfolio_id(p.id)
+            replayed_valuation = PortfolioReplayer.replay(txs, {})
+            current_cash = float(replayed_valuation.cash_balance.amount)
+
+            results.append({
                 "id": str(p.id),
                 "name": p.name,
                 "description": p.description,
                 "currency": p.currency,
                 "is_default": p.is_default,
-                "cash_balance": float(p.cash_balance.amount) if p.cash_balance else 0.0,
+                "cash_balance": current_cash,
                 "created_at": p.created_at.isoformat(),
-            }
-            for p in portfolios
-        ]
+            })
+
+        return results
 
     def create_portfolio(
         self,
@@ -49,6 +55,10 @@ class PortfolioAccountingService:
         description: str | None = None,
         is_default: bool = False,
     ) -> dict[str, Any]:
+        existing = self._portfolio_repo.get_user_portfolio_by_name(user_id, name.strip())
+        if existing:
+            raise ValidationError(f"An account named '{name.strip()}' already exists")
+
         portfolio = Portfolio(
             user_id=user_id,
             name=name.strip(),
@@ -64,12 +74,94 @@ class PortfolioAccountingService:
             "is_default": saved.is_default,
         }
 
+    def delete_portfolio(self, portfolio_id: UUID, user_id: UUID) -> None:
+        self.verify_ownership(portfolio_id, user_id)
+        txs = self._tx_repo.get_by_portfolio_id(portfolio_id)
+        if txs:
+            val = PortfolioReplayer.replay(txs, {})
+            if val.holdings:
+                raise ValidationError(
+                    "Cannot delete this account because it contains active securities. Please transfer or sell your shares first."
+                )
+
+        self._portfolio_repo.delete(portfolio_id)
+
+    def delete_transaction(self, portfolio_id: UUID, transaction_id: UUID, user_id: UUID) -> None:
+        self.verify_ownership(portfolio_id, user_id)
+        self._tx_repo.delete(transaction_id)
+
     def verify_ownership(self, portfolio_id: UUID, user_id: UUID) -> None:
         portfolio = self._portfolio_repo.get_by_id(portfolio_id)
         if not portfolio:
             raise NotFoundError("Portfolio not found")
         if portfolio.user_id != user_id:
             raise ForbiddenError("You do not have access to this portfolio")
+
+    def update_transaction(
+        self,
+        portfolio_id: UUID,
+        transaction_id: UUID,
+        user_id: UUID,
+        symbol: str | None = None,
+        quantity: Decimal = Decimal("0"),
+        price_per_share: Decimal = Decimal("0"),
+        brokerage_fee: Decimal = Decimal("0"),
+        notes: str | None = None,
+    ) -> dict[str, Any]:
+        self.verify_ownership(portfolio_id, user_id)
+        existing_tx = self._tx_repo.get_by_id(transaction_id)
+        if not existing_tx or existing_tx.portfolio_id != portfolio_id:
+            raise NotFoundError("Transaction not found")
+
+        sym = symbol.upper().strip() if symbol else existing_tx.symbol
+        updated_tx = Transaction(
+            id=existing_tx.id,
+            portfolio_id=portfolio_id,
+            transaction_type=existing_tx.transaction_type,
+            symbol=sym,
+            quantity=Quantity(quantity) if quantity > 0 else existing_tx.quantity,
+            price_per_share=Money(price_per_share, "PKR") if price_per_share > 0 else existing_tx.price_per_share,
+            brokerage_fee=Money(brokerage_fee, "PKR"),
+            regulatory_fee=existing_tx.regulatory_fee,
+            executed_at=existing_tx.executed_at,
+            notes=notes,
+        )
+
+        saved = self._tx_repo.save(updated_tx)
+        return {
+            "id": str(saved.id),
+            "transaction_type": saved.transaction_type.value,
+            "symbol": saved.symbol,
+            "quantity": float(saved.quantity.value),
+            "price_per_share": float(saved.price_per_share.amount),
+            "brokerage_fee": float(saved.brokerage_fee.amount),
+            "notes": saved.notes,
+        }
+
+    def get_portfolio_transactions(self, portfolio_id: UUID) -> list[dict[str, Any]]:
+        portfolio = self._portfolio_repo.get_by_id(portfolio_id)
+        if not portfolio:
+            raise NotFoundError("Portfolio not found")
+
+        txs = self._tx_repo.get_by_portfolio_id(portfolio_id)
+        return [
+            {
+                "id": str(tx.id),
+                "portfolio_id": str(tx.portfolio_id),
+                "portfolio_name": portfolio.name,
+                "transaction_type": tx.transaction_type.value,
+                "symbol": tx.symbol,
+                "quantity": float(tx.quantity.value),
+                "price_per_share": float(tx.price_per_share.amount),
+                "brokerage_fee": float(tx.brokerage_fee.amount),
+                "regulatory_fee": float(tx.regulatory_fee.amount),
+                "gross_amount": float(tx.gross_amount.amount),
+                "net_amount": float(tx.net_amount.amount),
+                "executed_at": tx.executed_at.isoformat(),
+                "notes": tx.notes,
+            }
+            for tx in txs
+        ]
 
     def record_transaction(
         self,
@@ -98,7 +190,6 @@ class PortfolioAccountingService:
             notes=notes,
         )
 
-        # Validate SELL / TRANSFER_OUT against existing open lots
         if transaction_type in (TransactionType.SELL, TransactionType.TRANSFER_OUT):
             existing_txs = self._tx_repo.get_by_portfolio_id(portfolio_id)
             valuation = PortfolioReplayer.replay(existing_txs)
@@ -111,7 +202,6 @@ class PortfolioAccountingService:
 
         saved_tx = self._tx_repo.save(tx)
 
-        # Update cash balance for standard cash trades
         if transaction_type in (
             TransactionType.BUY,
             TransactionType.SELL,
@@ -149,7 +239,6 @@ class PortfolioAccountingService:
         cdc_transfer_fee: Decimal = Decimal("0"),
         notes: str | None = None,
     ) -> dict[str, Any]:
-        """Move shares between accounts (e.g. Darson -> CDC IAS) strictly preserving FIFO cost basis."""
         self.verify_ownership(from_portfolio_id, user_id)
         self.verify_ownership(to_portfolio_id, user_id)
 
@@ -170,7 +259,6 @@ class PortfolioAccountingService:
         now = datetime.now(timezone.utc)
         effective_cost_per_share = holding.cost_per_share.amount
 
-        # 1. Record TRANSFER_OUT on source
         from_portfolio = self._portfolio_repo.get_by_id(from_portfolio_id)
         to_portfolio = self._portfolio_repo.get_by_id(to_portfolio_id)
         to_name = to_portfolio.name if to_portfolio else "destination"
@@ -188,7 +276,6 @@ class PortfolioAccountingService:
         )
         self._tx_repo.save(tx_out)
 
-        # 2. Record TRANSFER_IN on destination with preserved unit price & cost basis
         tx_in = Transaction(
             portfolio_id=to_portfolio_id,
             transaction_type=TransactionType.TRANSFER_IN,
@@ -218,7 +305,6 @@ class PortfolioAccountingService:
         return self._compute_valuation_response(portfolio.id, portfolio.name, portfolio.currency, transactions)
 
     def get_consolidated_valuation(self, user_id: UUID) -> dict[str, Any]:
-        """Aggregate wealth and holdings across all accounts owned by the user."""
         portfolios = self._portfolio_repo.get_by_user_id(user_id)
         all_transactions: list[Transaction] = []
 
@@ -283,9 +369,9 @@ class PortfolioAccountingService:
                 "current_price": curr_price,
                 "market_value": market_val,
                 "unrealized_gain": unrealized,
-                "unrealized_return_pct": round(unrealized_pct, 2),
+                "unrealized_return_pct": unrealized_pct,
                 "day_change": day_change,
-                "day_change_pct": round(day_change_pct, 2),
+                "day_change_pct": day_change_pct,
                 "open_lots": lots_data,
             })
 
@@ -310,23 +396,3 @@ class PortfolioAccountingService:
             },
             "holdings": holdings_list,
         }
-
-    def get_transactions_history(self, portfolio_id: UUID) -> list[dict[str, Any]]:
-        txs = self._tx_repo.get_by_portfolio_id(portfolio_id)
-        return [
-            {
-                "id": str(t.id),
-                "portfolio_id": str(t.portfolio_id),
-                "transaction_type": t.transaction_type.value,
-                "symbol": t.symbol,
-                "quantity": float(t.quantity.value),
-                "price_per_share": float(t.price_per_share.amount),
-                "brokerage_fee": float(t.brokerage_fee.amount),
-                "regulatory_fee": float(t.regulatory_fee.amount),
-                "gross_amount": float(t.gross_amount.amount),
-                "net_amount": float(t.net_amount.amount),
-                "executed_at": t.executed_at.isoformat(),
-                "notes": t.notes,
-            }
-            for t in reversed(txs)
-        ]
