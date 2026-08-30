@@ -1,0 +1,16 @@
+{
+  "name": "psx-tracker",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Professional PSX Portfolio Tracker with FIFO Lot Accounting",
+  "scripts": {
+    "dev:backend": "python backend/wsgi.py",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"blue.bold,green.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "cd frontend && npm run build",
+    "test": "pytest backend/tests/"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
