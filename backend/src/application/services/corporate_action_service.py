@@ -46,59 +46,57 @@ class CorporateActionService:
         executed_at: datetime | None = None,
     ) -> dict[str, Any]:
         sym = symbol.upper().strip()
-        shares = self._get_holding_qty(portfolio_id, sym)
-        if shares.is_zero():
-            raise ValidationError(f"No active holdings of {sym} found to receive dividends")
+        tx_date = executed_at or datetime.now(timezone.utc)
+        
+        # 1. Fetch all transactions for this portfolio
+        transactions = self._tx_repo.get_by_portfolio_id(portfolio_id)
+        
+        # 2. Filter transactions up to the dividend execution date
+        prior_txs = [tx for tx in transactions if tx.executed_at <= tx_date]
+        valuation = PortfolioReplayer.replay(prior_txs)
+        holding = valuation.holdings.get(sym)
 
-        calc = calculate_dividend(
-            shares_held=shares,
+        portfolio = self._portfolio_repo.get_by_id(portfolio_id)
+        pname = portfolio.name if portfolio else "this account"
+
+        if not holding or not holding.quantity.is_positive():
+            date_str = tx_date.strftime("%m/%d/%Y")
+            raise ValidationError(
+                f"'{sym}' security did not exist in {pname} on {date_str}. You can only credit dividends for shares held on or before the dividend record date."
+            )
+
+        eligible_qty = holding.quantity
+
+        div_calc = calculate_dividend(
+            shares_held=eligible_qty,
             dividend_per_share=dividend_per_share,
             tax_status=tax_status,
             custom_wht_rate=custom_wht_rate,
-            zakat_deducted=zakat_deducted,
+            zakat_deducted=zakat_deducted or Money.zero(dividend_per_share.currency),
         )
 
-        exec_time = executed_at or datetime.now(timezone.utc)
-
-        # 1. Record Transaction in ledger (tracks dividend income & WHT/Zakat separately)
-        tx = Transaction(
+        dividend_tx = Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.DIVIDEND_CASH,
             symbol=sym,
-            quantity=shares,
+            quantity=eligible_qty,
             price_per_share=dividend_per_share,
-            brokerage_fee=calc.wht_amount,
-            regulatory_fee=calc.zakat_amount,
-            executed_at=exec_time,
-            notes=f"Cash Dividend ({tax_status.value} {calc.wht_rate_pct}%)",
+            regulatory_fee=div_calc.wht_amount + div_calc.zakat_amount,
+            executed_at=tx_date,
+            notes=f"DPS: PKR {dividend_per_share.amount} | Tax: {tax_status.value} ({div_calc.wht_rate_pct}%) | Zakat: PKR {div_calc.zakat_amount.amount}",
         )
-        self._tx_repo.save(tx)
-
-        # 2. Log Corporate Action Record for FBR Tax Audit
-        ca_log = CorporateActionModel(
-            portfolio_id=portfolio_id,
-            symbol=sym,
-            action_type=CorporateActionType.CASH_DIVIDEND,
-            tax_status=tax_status,
-            gross_amount=calc.gross_dividend.amount,
-            tax_deducted=calc.wht_amount.amount,
-            zakat_deducted=calc.zakat_amount.amount,
-            net_amount=calc.net_dividend_credited.amount,
-            quantity_adjusted=shares.value,
-            executed_at=exec_time,
-        )
-        self._session.add(ca_log)
-        self._session.flush()
+        saved_tx = self._tx_repo.save(dividend_tx)
 
         return {
+            "transaction_id": str(saved_tx.id),
             "symbol": sym,
-            "shares_held": float(shares.value),
+            "shares_held": float(eligible_qty.value),
             "dividend_per_share": float(dividend_per_share.amount),
-            "gross_dividend": float(calc.gross_dividend.amount),
-            "wht_rate_percent": float(calc.wht_rate_pct),
-            "wht_deducted": float(calc.wht_amount.amount),
-            "zakat_deducted": float(calc.zakat_amount.amount),
-            "net_dividend_income": float(calc.net_dividend_credited.amount),
+            "gross_dividend": float(div_calc.gross_dividend.amount),
+            "wht_amount": float(div_calc.wht_amount.amount),
+            "zakat_deducted": float(div_calc.zakat_amount.amount),
+            "net_dividend": float(div_calc.net_dividend_credited.amount),
+            "executed_at": tx_date.isoformat(),
         }
 
     def apply_bonus_shares(

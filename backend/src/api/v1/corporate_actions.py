@@ -39,6 +39,13 @@ def post_dividend() -> tuple[Response, int]:
     except Exception as e:
         raise ValidationError(f"Invalid input data: {str(e)}")
 
+    exec_at = None
+    if data.get("executed_at"):
+        try:
+            exec_at = datetime.fromisoformat(data["executed_at"].replace("Z", "+00:00"))
+        except Exception:
+            exec_at = None
+
     session = get_db_session()
     service = CorporateActionService(session)
     result = service.apply_cash_dividend(
@@ -48,6 +55,7 @@ def post_dividend() -> tuple[Response, int]:
         tax_status=tax_status,
         custom_wht_rate=custom_rate,
         zakat_deducted=zakat,
+        executed_at=exec_at,
     )
     session.commit()
 

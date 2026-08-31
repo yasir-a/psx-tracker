@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TransactionRecord } from '../../../types/portfolio';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
-import { PlusCircle, Trash2, Edit2 } from 'lucide-react';
+import { PlusCircle, Trash2, Edit2, Download } from 'lucide-react';
 
 interface TransactionsViewProps {
   transactions: TransactionRecord[];
@@ -11,22 +11,14 @@ interface TransactionsViewProps {
   onDeleteTransaction?: (portfolioId: string, transactionId: string) => void;
 }
 
-// Color badges for each Account / Broker
 const getAccountBadgeClass = (name?: string) => {
   const lower = (name || '').toLowerCase();
-  if (lower.includes('darson')) {
-    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-  }
-  if (lower.includes('bma')) {
-    return 'bg-rose-50 text-rose-700 border-rose-200';
-  }
-  if (lower.includes('cdc')) {
-    return 'bg-blue-50 text-blue-700 border-blue-200';
-  }
+  if (lower.includes('darson')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (lower.includes('bma')) return 'bg-rose-50 text-rose-700 border-rose-200';
+  if (lower.includes('cdc')) return 'bg-blue-50 text-blue-700 border-blue-200';
   return 'bg-slate-100 text-slate-700 border-slate-200';
 };
 
-// Symmetrical single-line badges for Transaction Types
 const getTypeBadgeClass = (type: string) => {
   switch (type) {
     case 'BUY':
@@ -60,6 +52,35 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
     return t.transaction_type === filterType;
   });
 
+  // Export to Excel / CSV
+  const exportToExcel = () => {
+    const headers = ['Date,Account,Type,Symbol,Quantity,Price per Share (PKR),Fees (PKR),Net Amount (PKR),Notes'];
+    const rows = filtered.map((t) => {
+      const sym = t.transaction_type === 'CASH_DEPOSIT' || t.transaction_type === 'CASH_WITHDRAWAL' ? 'CASH' : t.symbol || '';
+      return [
+        `"${new Date(t.executed_at).toLocaleDateString()}"`,
+        `"${t.portfolio_name || 'Account'}"`,
+        `"${t.transaction_type}"`,
+        `"${sym}"`,
+        t.quantity || 0,
+        t.price_per_share || 0,
+        (t.brokerage_fee + t.regulatory_fee).toFixed(2),
+        Math.abs(t.net_amount).toFixed(2),
+        `"${(t.notes || '').replace(/"/g, '""')}"`,
+      ].join(',');
+    });
+
+    const csvContent = '\uFEFF' + [headers, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `PSX_Transaction_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -67,10 +88,16 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Transaction Ledger</h2>
           <p className="text-xs text-gray-500 mt-0.5">Audit trail of all portfolio and transfer events</p>
         </div>
-        <Button variant="primary" size="sm" onClick={onOpenTrade}>
-          <PlusCircle className="w-4 h-4 mr-1.5" />
-          Add Transaction
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <Button variant="secondary" size="sm" onClick={exportToExcel} disabled={filtered.length === 0}>
+            <Download className="w-4 h-4 mr-1.5 text-gray-600" />
+            Export to Excel
+          </Button>
+          <Button variant="primary" size="sm" onClick={onOpenTrade}>
+            <PlusCircle className="w-4 h-4 mr-1.5" />
+            Add Transaction
+          </Button>
+        </div>
       </div>
 
       <Card>
