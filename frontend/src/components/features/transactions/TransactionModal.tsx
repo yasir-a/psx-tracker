@@ -25,7 +25,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>(
     activePortfolioId === 'consolidated' ? (portfolios[0]?.id || '') : activePortfolioId
   );
-  const [type, setType] = useState<'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL'>('BUY');
+  const [type, setType] = useState<'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'DIVIDEND_CASH'>('BUY');
   const [symbol, setSymbol] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
@@ -36,10 +36,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const isCash = type === 'CASH_DEPOSIT' || type === 'CASH_WITHDRAWAL';
+  const isDividend = type === 'DIVIDEND_CASH';
 
-  // Available accounts based on transaction type
-  // Cash deposit/withdrawal is allowed on all accounts including CDC.
-  // Buy/Sell is restricted to broker accounts.
   const availablePortfolios = isCash
     ? portfolios
     : portfolios.filter((p) => !p.name.toLowerCase().includes('cdc'));
@@ -51,7 +49,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setSymbol(editingTransaction.symbol || '');
       setQuantity(editingTransaction.quantity ? String(editingTransaction.quantity) : '');
       setPrice(String(editingTransaction.price_per_share));
-      setFee(String(editingTransaction.brokerage_fee || 0));
+      setFee(String((editingTransaction.brokerage_fee || 0) + (editingTransaction.regulatory_fee || 0)));
       setExecutedAt(editingTransaction.executed_at.split('T')[0]);
       setNotes(editingTransaction.notes || '');
     } else {
@@ -80,7 +78,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     try {
       const execDate = new Date(executedAt);
-      execDate.setHours(10, 0, 0, 0); // Default market trading hour
+      execDate.setHours(10, 0, 0, 0);
 
       if (editingTransaction) {
         await portfolioService.updateTransaction(selectedPortfolioId, editingTransaction.id, {
@@ -114,7 +112,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingTransaction ? 'Edit Transaction' : 'Record New Transaction'}
+      title={editingTransaction ? `Edit ${editingTransaction.transaction_type.replace('_', ' ')}` : 'Record New Transaction'}
     >
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
@@ -123,7 +121,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Account Selector */}
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase">
             Account
@@ -134,7 +131,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             onChange={(e) => setSelectedPortfolioId(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold bg-white focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100 cursor-pointer"
           >
-            {availablePortfolios.map((p) => (
+            {(isDividend ? portfolios : availablePortfolios).map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} (Cash: PKR {p.cash_balance.toLocaleString()})
               </option>
@@ -142,7 +139,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </select>
         </div>
 
-        {/* Transaction Type Buttons */}
         {!editingTransaction && (
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase">Type</label>
@@ -167,7 +163,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </div>
         )}
 
-        {/* Execution Date Picker */}
         <Input
           label="Transaction Date"
           type="date"
@@ -179,8 +174,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         {!isCash && (
           <Input
             label="PSX Symbol"
-            placeholder="e.g. ENGRO, SYS, FFC, OGDC"
+            placeholder="e.g. ENGRO, SYS, FFC, OGDC, DCR"
             value={symbol}
+            disabled={!!editingTransaction && isDividend}
             onChange={(e) => setSymbol(e.target.value)}
             required
           />
@@ -188,7 +184,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
         {!isCash && (
           <Input
-            label="Quantity (Shares)"
+            label={isDividend ? "Eligible Shares" : "Quantity (Shares)"}
             type="number"
             min="1"
             step="1"
@@ -200,7 +196,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         )}
 
         <Input
-          label={isCash ? 'Amount (PKR)' : 'Price per Share (PKR)'}
+          label={isCash ? 'Amount (PKR)' : isDividend ? 'Dividend Per Share (DPS in PKR)' : 'Price per Share (PKR)'}
           type="number"
           step="0.01"
           placeholder="e.g. 550.00"
@@ -211,7 +207,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
         {!isCash && (
           <Input
-            label="Brokerage & Regulatory Fees (PKR)"
+            label={isDividend ? "Tax & Zakat Deductions (PKR)" : "Brokerage & Regulatory Fees (PKR)"}
             type="number"
             step="0.01"
             placeholder="e.g. 15.00"

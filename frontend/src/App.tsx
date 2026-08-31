@@ -231,7 +231,8 @@ const MainApp: React.FC = () => {
 
             {activeTab === 'corporate_actions' && (
               <CorporateActionsView
-                portfolioId={activePortfolioId === 'consolidated' ? (portfolios[0]?.id || '') : activePortfolioId}
+                portfolioId={activePortfolioId}
+                portfolios={portfolios}
                 onSuccess={() => {
                   showToast('Corporate action recorded successfully!');
                   refreshValuation(activePortfolioId);

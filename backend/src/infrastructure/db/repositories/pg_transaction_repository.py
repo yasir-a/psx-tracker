@@ -56,6 +56,7 @@ class PgTransactionRepository(ITransactionRepository):
             model.brokerage_fee = transaction.brokerage_fee.amount
             model.regulatory_fee = transaction.regulatory_fee.amount
             model.notes = transaction.notes
+            model.executed_at = transaction.executed_at
 
         self._session.flush()
         return self._to_entity(model)
@@ -68,16 +69,15 @@ class PgTransactionRepository(ITransactionRepository):
         stmt = (
             select(TransactionModel)
             .where(TransactionModel.portfolio_id == portfolio_id)
-            .order_by(TransactionModel.executed_at.asc())
+            .order_by(TransactionModel.executed_at.asc(), TransactionModel.created_at.asc())
         )
-        models = self._session.execute(stmt).scalars().all()
+        models = self._session.scalars(stmt).all()
         return [self._to_entity(m) for m in models]
-    
+
     def delete(self, transaction_id: UUID) -> bool:
         model = self._session.get(TransactionModel, transaction_id)
         if model:
-            # Also delete associated tax lots
-            self._session.query(TaxLotModel).filter_by(transaction_id=transaction_id).delete()
             self._session.delete(model)
+            self._session.flush()
             return True
         return False

@@ -1,7 +1,7 @@
-import React from 'react';
-import { LogOut, User as UserIcon, PlusCircle, ArrowLeftRight, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { LogOut, User as UserIcon, PlusCircle, ArrowLeftRight, Trash2, Database } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { PortfolioListItem } from '../../services/portfolioService';
+import { PortfolioListItem, portfolioService } from '../../services/portfolioService';
 
 interface HeaderProps {
   portfolios: PortfolioListItem[];
@@ -21,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   onDeletePortfolio,
 }) => {
   const { user, logout } = useAuth();
+  const [isBackingUp, setIsBackingUp] = useState(false);
 
   const totalConsolidatedCash = portfolios.reduce(
     (sum, p) => sum + (p.cash_balance || 0),
@@ -28,6 +29,18 @@ export const Header: React.FC<HeaderProps> = ({
   );
 
   const activePortfolio = portfolios.find((p) => p.id === activePortfolioId);
+
+  const handleBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      const res = await portfolioService.backupDatabase();
+      alert(`✅ ${res.message}`);
+    } catch (err: any) {
+      alert(`❌ ${err?.response?.data?.error?.message || 'Database backup failed'}`);
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
 
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20">
@@ -84,9 +97,20 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      {/* User Info & Logout */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-sm text-gray-700">
+      {/* User Info, Backup & Logout */}
+      <div className="flex items-center gap-3">
+        {/* DB Backup Button */}
+        <button
+          onClick={handleBackup}
+          disabled={isBackingUp}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors"
+          title="Create PostgreSQL database dump on Desktop"
+        >
+          <Database className="w-3.5 h-3.5 text-emerald-600" />
+          {isBackingUp ? 'Backing up...' : 'Backup DB'}
+        </button>
+
+        <div className="flex items-center gap-2 text-sm text-gray-700 pl-2 border-l border-gray-200">
           <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
             {user?.full_name?.charAt(0) || <UserIcon className="w-4 h-4" />}
           </div>

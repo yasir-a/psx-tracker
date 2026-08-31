@@ -115,10 +115,16 @@ export const portfolioService = {
     tax_status: 'FILER' | 'NON_FILER' | 'CUSTOM';
     custom_tax_rate?: number;
     zakat_deducted?: number;
+    executed_at?: string;
   }): Promise<void> {
     await apiClient.post('/corporate-actions/dividend', payload);
   },
 
+  async backupDatabase(): Promise<{ message: string; file_path: string }> {
+    const res = await apiClient.post('/system/backup-db');
+    return res.data;
+  },
+  
   async getTaxReport(portfolioId: string, taxYear?: number): Promise<any> {
     const res = await apiClient.get(`/corporate-actions/tax-report/${portfolioId}`, {
       params: { tax_year: taxYear },
