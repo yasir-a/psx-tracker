@@ -1,12 +1,17 @@
 import { apiClient } from './api';
-import { MarketQuote, Security } from '../types/market';
+import { MarketQuote, SecurityDetails } from '../types/market';
 
 export const marketService = {
-  async getSymbols(query?: string, sector?: string): Promise<Security[]> {
-    const res = await apiClient.get<{ count: number; securities: Security[] }>('/market/symbols', {
-      params: { query, sector },
-    });
-    return res.data.securities;
+  async getBulkQuotes(symbols: string[]): Promise<Record<string, MarketQuote>> {
+    const res = await apiClient.post<any>('/market/quotes', { symbols });
+    // Support both direct dictionary { EFERT: {...} } and wrapped { quotes: { EFERT: {...} } }
+    if (res.data && res.data.quotes && typeof res.data.quotes === 'object') {
+      return res.data.quotes;
+    }
+    if (res.data && typeof res.data === 'object') {
+      return res.data;
+    }
+    return {};
   },
 
   async getQuote(symbol: string): Promise<MarketQuote> {
@@ -14,8 +19,8 @@ export const marketService = {
     return res.data;
   },
 
-  async getBulkQuotes(symbols: string[]): Promise<Record<string, MarketQuote>> {
-    const res = await apiClient.post<{ quotes: Record<string, MarketQuote> }>('/market/quotes', { symbols });
-    return res.data.quotes;
+  async getSecurityDetails(symbol: string): Promise<SecurityDetails> {
+    const res = await apiClient.get<SecurityDetails>(`/market/details/${symbol}`);
+    return res.data;
   },
 };

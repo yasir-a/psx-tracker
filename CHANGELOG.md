@@ -10,7 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Phase 9: Advanced Analytics & PSX Extensions**
+- **Phase 12: Comprehensive PSX Market Data Terminal**
+  - Interactive full-featured financial terminal for PSX equities modeled on mobile terminal reference designs.
+  - **Live Sub-Tab**: Real-time quotes, intraday SVG wave chart with multi-timeframe toggles (`1D`, `1M`, `6M`, `YTD`, `1Y`, `3Y`, `5Y`), volume, open price, last day close, Bid/Ask quotes, interactive Day Range slider, 52-Week Range slider, and circuit breakers.
+  - **Fundamentals Sub-Tab**: EPS breakdown (Annual 2025, Last Quarter Q2, YTD, Expected FY), P/E ratios, Expected growth %, PEG ratios, Profit margins (Gross, Operating, Net, EBITDA), Return on Capital (ROE, ROA, ROCE), and Dividend Payout metrics (DPS, Dividend Yield, Dividend Cover, Payout Ratio).
+  - **Technicals Sub-Tab**: Real-time indicators with signal badges (RSI 14, STOCH, MACD), Standard Pivot Points (S3 through R3), and Simple Moving Averages (SMA5 to SMA150) with trend ratings.
+  - **Announcements Sub-Tab**: Official PSX corporate filings and disclosures with date/time stamps, category tags, and downloadable PDF report links.
+  - **Profile Sub-Tab**: Company background narrative, Equity profile (Market Cap, Total Shares, Free Float, Free Float %), Top Executive management (Chairperson, CEO, Secretary), Registered Head Office address, official website link, share registrar, and statutory auditor.
+  - **Competitors Sub-Tab**: Peer comparison table comparing peers within the same PSX sector on Price, P/E, Market Cap, Dividend Yield, and 1-Day Return with one-click analysis router.
+  - Backend detailed stock intelligence domain model and endpoint `GET /api/v1/market/details/<symbol>`.
+- **Phase 11: System Backups, Ledger Export & Corporate Action Custom Dates**
+  - One-click PostgreSQL backup utility via `POST /api/v1/system/backup-db` creating timestamped SQL dumps saved into `C:\psx-tracker-backup`.
+  - Transaction ledger Excel / CSV export functionality with formatted columns and UTF-8 BOM encoding.
+  - Custom execution dates and record-date aware holding validation in Corporate Actions.
+  - Transaction editing and deletion support for dividends with automatic lot and cash balance recalculations.
   - KSE-100 index performance benchmark comparison engine calculating Portfolio Alpha (α) and Beta (β) in `backend/src/domain/analytics/benchmark_engine.py`.
   - PSX Sector concentration and diversification risk visualizer with >35% single-sector alerts in `backend/src/domain/analytics/sector_analytics.py`.
   - NCCPL Section 37A Capital Gains Tax (CGT) holding period schedule calculator for Filer (15%) and Non-Filer (30%) in `backend/src/domain/analytics/cgt_calculator.py`.

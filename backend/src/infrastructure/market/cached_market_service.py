@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Sequence
 
 from src.config import Settings, get_settings
 from src.domain.market.provider_interface import IMarketDataProvider
-from src.domain.market.quote import MarketQuote
+from src.domain.market.quote import HistoricalPrice, MarketQuote
 from src.domain.market.security import Security
 from src.domain.values.money import Money
 from src.infrastructure.cache.redis_client import get_redis_client
@@ -29,6 +29,7 @@ class CachedMarketService:
             "change_percent": str(quote.change_percent),
             "volume": quote.volume,
             "updated_at": quote.updated_at.isoformat(),
+            "status": quote.status.value,
         })
 
     def _deserialize_quote(self, data: str) -> MarketQuote:
@@ -41,13 +42,13 @@ class CachedMarketService:
             change_percent=Decimal(d["change_percent"]),
             volume=int(d["volume"]),
             updated_at=datetime.fromisoformat(d["updated_at"]),
+            status=DataStatus(d.get("status", "FRESH")),
         )
 
     def get_quote(self, symbol: str) -> MarketQuote | None:
         sym = symbol.upper().strip()
         client = get_redis_client(self._settings)
 
-        # 1. Try Redis cache
         if client is not None:
             try:
                 cached = client.get(f"mkt:quote:{sym}")
@@ -56,7 +57,6 @@ class CachedMarketService:
             except Exception:
                 pass
 
-        # 2. Fetch from underlying provider
         quote = self._provider.get_quote(sym)
         if quote and client is not None:
             try:
@@ -93,7 +93,6 @@ class CachedMarketService:
         else:
             missing_symbols = syms
 
-        # Fetch missing symbols
         if missing_symbols:
             fetched = self._provider.get_bulk_quotes(missing_symbols)
             for sym, quote in fetched.items():
@@ -108,7 +107,17 @@ class CachedMarketService:
                     except Exception:
                         pass
         return quotes
+
     def list_all_securities(self) -> list[Security]:
         return self._provider.list_all_securities()
+
     def get_security_metadata(self, symbol: str) -> Security | None:
         return self._provider.get_security_metadata(symbol)
+
+    def get_historical_prices(
+        self,
+        symbol: str,
+        start_date: date,
+        end_date: date,
+    ) -> list[HistoricalPrice]:
+        return self._provider.get_historical_prices(symbol, start_date=start_date, end_date=end_date)
