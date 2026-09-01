@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_AUTH_PER_MINUTE: int = 10
 
     # Market Data Settings
-    MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "mock"
+    MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "psx_scraper"
     MARKET_DATA_CACHE_TTL_SECONDS: int = 300  # 5 minutes
     PSX_SCRAPER_TIMEOUT_SECONDS: float = 5.0
 

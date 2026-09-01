@@ -109,6 +109,12 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `ADV-001` | KSE-100 Benchmark Comparison | **Completed** | `UI-004`, `MKT-003` | Relative portfolio alpha/beta and performance overlay against index. |
-| `ADV-002` | Watchlists & Price Alerts | **Completed** | `MKT-003`, `FE-004` | Real-time price monitoring and sector concentration visualizers. |
-| `ADV-003` | Tax & Capital Gains Summary Reports | **Completed** | `ACC-003` | PSX NCCPL Section 37A holding period tax schedule (15% Filer / 30% Non-Filer). |
+## Phase 12: Comprehensive PSX Market Data Terminal
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `MKT-004` | Security Live Market View | **Completed** | `MKT-001` | Intraday chart, bid/ask, day/52-week sliders, circuit breakers. |
+| `MKT-005` | Fundamentals & Valuation Ratios | **Completed** | `MKT-004` | EPS, P/E, Margins (Gross/Net/EBITDA), ROE/ROA, Dividend payouts. |
+| `MKT-006` | Technical Indicators & Pivots | **Completed** | `MKT-004` | RSI(14), STOCH, MACD, S1-S3 / R1-R3 Pivot Points, SMA5-150. |
+| `MKT-007` | Corporate Announcements & Filings | **Completed** | `MKT-004` | Quarterly reports, corporate briefings, board meetings, PDF downloads. |
+| `MKT-008` | Company Profile & Competitors | **Completed** | `MKT-004` | Free float %, market cap, executive team, address, auditor, sector peer comparison. |

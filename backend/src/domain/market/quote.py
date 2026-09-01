@@ -3,8 +3,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from enum import Enum
 
 from src.domain.values.money import Money
+
+
+class DataStatus(str, Enum):
+    """Data freshness indicator for financial quotes."""
+    FRESH = "FRESH"
+    STALE = "STALE"
+    DELAYED = "DELAYED"
+    UNAVAILABLE = "UNAVAILABLE"
+    MOCK = "MOCK"
 
 
 @dataclass(frozen=True)
@@ -18,6 +28,7 @@ class MarketQuote:
     change_percent: Decimal
     volume: int
     updated_at: datetime
+    status: DataStatus = DataStatus.FRESH
 
     @classmethod
     def create(
@@ -27,6 +38,7 @@ class MarketQuote:
         previous_close: Money,
         volume: int = 0,
         updated_at: datetime | None = None,
+        status: DataStatus = DataStatus.FRESH,
     ) -> MarketQuote:
         change = (current_price - previous_close).round(4)
         if previous_close.amount > Decimal("0"):
@@ -41,6 +53,7 @@ class MarketQuote:
             change_percent=pct,
             volume=volume,
             updated_at=updated_at or datetime.now(timezone.utc),
+            status=status,
         )
 
 

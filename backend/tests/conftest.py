@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Generator
 import pytest
 from flask import Flask
@@ -13,6 +14,13 @@ from src.config import TestingSettings
 from src.infrastructure.db.base import Base
 import src.infrastructure.db.models  # noqa: F401
 import src.infrastructure.db.session as db_session_module
+from src.infrastructure.market.provider_factory import get_market_service
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_mock_market_provider():
+    """Ensure market service uses MockMarketDataProvider in test suite."""
+    get_market_service.cache_clear()
 
 
 @pytest.fixture(scope="session")
@@ -20,6 +28,7 @@ def test_settings() -> TestingSettings:
     """Provide testing settings."""
     settings = TestingSettings()
     settings.DATABASE_URL = "sqlite:///:memory:"
+    settings.MARKET_DATA_PROVIDER = "mock"
     return settings
 
 
