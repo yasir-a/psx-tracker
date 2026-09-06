@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timezone
 from decimal import Decimal
+from typing import Any
 from sqlalchemy import desc, or_, select
 from sqlalchemy.orm import Session
 
@@ -9,7 +10,11 @@ from src.domain.market.quote import DataStatus, HistoricalPrice, MarketQuote
 from src.domain.market.security import Security, SecurityType
 from src.domain.repositories.security_repository import ISecurityRepository
 from src.domain.values.money import Money
-from src.infrastructure.db.models.security_model import HistoricalPriceModel, SecurityModel
+from src.infrastructure.db.models.security_model import (
+    HistoricalPriceModel,
+    IntradaySnapshotModel,
+    SecurityModel,
+)
 
 
 class PgSecurityRepository(ISecurityRepository):
@@ -167,3 +172,35 @@ class PgSecurityRepository(ISecurityRepository):
             )
             for m in models
         ]
+
+    # --- Intraday Snapshot Persistence for Weekends & Off-Hours ---
+
+    def save_intraday_snapshot(
+        self,
+        symbol: str,
+        trade_date: date,
+        ticks: list[dict[str, Any]],
+    ) -> None:
+        sym = symbol.upper().strip()
+        model = self._session.get(IntradaySnapshotModel, sym)
+        now = datetime.now(timezone.utc)
+        if model is None:
+            model = IntradaySnapshotModel(
+                symbol=sym,
+                trade_date=trade_date,
+                ticks=ticks,
+                updated_at=now,
+            )
+            self._session.add(model)
+        else:
+            model.trade_date = trade_date
+            model.ticks = ticks
+            model.updated_at = now
+        self._session.flush()
+
+    def get_latest_intraday_snapshot(self, symbol: str) -> list[dict[str, Any]] | None:
+        sym = symbol.upper().strip()
+        model = self._session.get(IntradaySnapshotModel, sym)
+        if model and model.ticks:
+            return model.ticks
+        return None

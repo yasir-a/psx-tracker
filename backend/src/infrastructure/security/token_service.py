@@ -7,7 +7,7 @@ import jwt
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 from src.config import Settings, get_settings
-from src.infrastructure.cache.redis_client import get_redis_client
+from src.infrastructure.cache.memory_cache import get_cache
 
 
 class TokenService:
@@ -75,7 +75,7 @@ class TokenService:
 
     def revoke_token(self, jti: str, expires_at: datetime | int) -> None:
         """Add token jti to Redis blacklist until expiration."""
-        client = get_redis_client(self._settings)
+        client = get_cache()
         if client is None:
             return
 
@@ -91,7 +91,7 @@ class TokenService:
 
     def is_token_blacklisted(self, jti: str) -> bool:
         """Check if a token jti is present in the Redis blacklist."""
-        client = get_redis_client(self._settings)
+        client = get_cache()
         if client is None:
             return False
         try:
@@ -101,7 +101,7 @@ class TokenService:
 
     def revoke_all_user_tokens(self, user_id: UUID | str) -> None:
         """Invalidate all active tokens for a user by recording the revocation timestamp."""
-        client = get_redis_client(self._settings)
+        client = get_cache()
         if client is None:
             return
         now_ts = int(datetime.now(timezone.utc).timestamp())
@@ -113,7 +113,7 @@ class TokenService:
 
     def is_user_revoked(self, user_id: str, token_iat: int) -> bool:
         """Check if token was issued prior to user-level token invalidation."""
-        client = get_redis_client(self._settings)
+        client = get_cache()
         if client is None:
             return False
         try:
@@ -127,7 +127,7 @@ class TokenService:
 
     def clear_user_cache(self, user_id: UUID | str) -> None:
         """Clean up user-specific cache keys without affecting other users."""
-        client = get_redis_client(self._settings)
+        client = get_cache()
         if client is None:
             return
         try:

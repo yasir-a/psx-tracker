@@ -1,41 +1,32 @@
 from __future__ import annotations
 
 import time
+from collections import defaultdict
+from threading import Lock
+
 from src.config import Settings, get_settings
-from src.infrastructure.cache.redis_client import get_redis_client
 
 
 class RateLimiter:
-    """Sliding-window rate limiter utilizing Redis."""
+    """In-memory sliding-window rate limiter (zero Redis dependency)."""
 
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
+        self._requests: dict[str, list[float]] = defaultdict(list)
+        self._lock = Lock()
 
     def is_allowed(self, key: str, max_requests: int, window_seconds: int = 60) -> bool:
         """Check if request under `key` is allowed within `window_seconds`."""
-        client = get_redis_client(self._settings)
-        if client is None:
-            # Graceful fallback: allow request if Redis is unavailable
-            return True
-
         current_time = time.time()
         cutoff_time = current_time - window_seconds
-        redis_key = f"ratelimit:{key}"
 
-        try:
-            pipe = client.pipeline()
-            # Remove timestamps outside window
-            pipe.zremrangebyscore(redis_key, 0, cutoff_time)
-            # Count requests in window
-            pipe.zcard(redis_key)
-            # Add current timestamp
-            pipe.zadd(redis_key, {str(current_time): current_time})
-            # Set key expiry
-            pipe.expire(redis_key, window_seconds + 5)
-            results = pipe.execute()
+        with self._lock:
+            # Purge timestamps older than the sliding window
+            timestamps = [t for t in self._requests[key] if t > cutoff_time]
+            if len(timestamps) >= max_requests:
+                self._requests[key] = timestamps
+                return False
 
-            request_count = results[1]
-            return bool(request_count < max_requests)
-        except Exception:
-            # Fallback to allow if Redis operation fails
+            timestamps.append(current_time)
+            self._requests[key] = timestamps
             return True

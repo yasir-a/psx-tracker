@@ -106,5 +106,6 @@ def get_historical_quotes(symbol: str) -> tuple[Response, int]:
 @market_bp.route("/details/<string:symbol>", methods=["GET"])
 def get_security_details(symbol: str) -> tuple[Response, int]:
     """Get comprehensive security intelligence for all 6 tabs (Live, Fundamentals, Technicals, Announcements, Profile, Competitors)."""
-    data = get_detailed_stock_intelligence(symbol)
+    service = get_market_service()
+    data = service.get_security_details(symbol.upper().strip())
     return jsonify(data), 200

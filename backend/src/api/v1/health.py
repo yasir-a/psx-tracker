@@ -6,7 +6,7 @@ from flask import Blueprint, current_app, jsonify, Response
 from sqlalchemy import text
 
 from src.config import get_settings
-from src.infrastructure.cache.redis_client import is_redis_available
+from src.infrastructure.cache.memory_cache import is_cache_available
 from src.infrastructure.db.session import get_engine
 
 health_bp = Blueprint("health", __name__)
@@ -32,7 +32,7 @@ def health_check() -> tuple[Response, int]:
 
 @health_bp.route("/ready", methods=["GET"])
 def readiness_check() -> tuple[Response, int]:
-    """Readiness probe: checks downstream dependency connectivity (PostgreSQL, Redis)."""
+    """Readiness probe: checks downstream dependency connectivity (PostgreSQL, InMemoryCache)."""
     checks: dict[str, str] = {
         "application": "ok",
     }
@@ -47,8 +47,8 @@ def readiness_check() -> tuple[Response, int]:
         current_app.logger.warning("Database readiness check failed: %s", str(e))
         checks["database"] = "unavailable"
 
-    # Redis connectivity check
-    checks["redis"] = "ok" if is_redis_available() else "unavailable"
+    # In-memory cache connectivity check
+    checks["cache"] = "ok" if is_cache_available() else "unavailable"
 
     # Application is ready if primary database is available
     is_ready = checks.get("application") == "ok" and checks.get("database") == "ok"

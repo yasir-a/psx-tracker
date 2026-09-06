@@ -27,9 +27,10 @@
 * **Persistent Database:** **PostgreSQL**.
   * Authoritative source of all financial, user, and portfolio state.
   * Schema managed strictly via migrations (e.g., Alembic).
-* **Caching & Ephemeral Layer:** **Redis**.
-  * Use for rate limiting, session states, response caching, and task coordination.
-  * **Rule:** Redis is NEVER authoritative for financial state. The application must completely recover state from PostgreSQL if Redis data is wiped.
+* **Caching & Ephemeral Layer:** **Pure Python In-Memory Cache (`InMemoryCache`)**.
+  * Zero external service overhead (no Redis required).
+  * In-memory thread-safe TTL caching for market intelligence, quotes, and sliding-window rate limiting.
+  * Multi-day historical and intraday tick persistence handled directly by PostgreSQL (`historical_prices` and `intraday_snapshots`).
 * **License:** **MIT License** (Copyright: Yasir W.).
 
 ### 2.2 Financial & Accounting Model Decisions
@@ -74,7 +75,7 @@ psx-tracker/
 │   │   ├── api/              # Flask Blueprints, route handlers, serializers
 │   │   ├── application/      # Use-cases, orchestration, application DTOs
 │   │   ├── domain/           # Pure business logic (Ledger, FIFO matcher, Entities, Money VO)
-│   │   ├── infrastructure/   # DB models, PostgreSQL repositories, Redis client, MarketData adapters
+│   │   ├── infrastructure/   # DB models, PostgreSQL repositories, InMemoryCache, MarketData adapters
 │   │   └── config.py         # Type-safe configuration and environment loading
 │   ├── tests/
 │   │   ├── unit/             # Isolated unit tests (domain logic, money math)
@@ -145,5 +146,5 @@ psx-tracker/
   - KSE-100 Benchmark Performance Comparison (Alpha / Beta) and Sector Concentration Risk visualizers.
   - One-click PostgreSQL backup utility (`C:\psx-tracker-backup`) and Excel / CSV transaction ledger export.
   - **Phase 12 Market Terminal**: Interactive full-featured financial terminal for PSX stocks with **Live** (intraday charts, day/52-week sliders, circuit breakers), **Fundamentals** (EPS, P/E, profit margins, ROE/ROA, dividend payouts), **Technicals** (RSI, STOCH, MACD, S1-S3/R1-R3 pivot points, SMAs), **Announcements** (official filings & PDF downloads), **Profile** (free float, executive team, head office, auditor), and **Competitors** (peer sector comparison).
-  - **Phase 13 Admin Management**: Server-side role-based authorization (`@admin_required`), dedicated CLI setup script (`backend/scripts/setup_admin.py`), user directory dashboard, Argon2id password reset with Redis token invalidation, cascading atomic hard-deletion of user accounts, and self-protection safeguards.
+  - **Phase 13 Admin Management**: Server-side role-based authorization (`@admin_required`), dedicated CLI setup script (`backend/scripts/setup_admin.py`), user directory dashboard, Argon2id password reset with immediate in-memory token invalidation, cascading atomic hard-deletion of user accounts, and self-protection safeguards.
   - 100% automated test suite passing (38 tests) with clean TypeScript Vite frontend builds.
