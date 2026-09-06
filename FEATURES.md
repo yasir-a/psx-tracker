@@ -126,6 +126,8 @@ Status definitions:
 | `ADM-001` | Role-Based Access Control | **Completed** | `AUTH-001` | `user` vs `admin` roles, `@admin_required` server-side enforcement. |
 | `ADM-002` | Admin CLI Setup Tool | **Completed** | `ADM-001` | `setup_admin.py` for promoting or creating dedicated admin accounts. |
 | `ADM-003` | Admin User Directory Dashboard | **Completed** | `ADM-001` | Search, user table, role badges, portfolio counts, created timestamp. |
-| `ADM-004` | Admin Password Reset | **Completed** | `ADM-001` | Secure Argon2id reset with immediate Redis token revocation. |
-| `ADM-005` | Cascading User Hard Deletion | **Completed** | `ADM-001` | Atomic removal of user, portfolios, ledgers, tax lots, and Redis keys. |
+| `ADM-004` | Admin Password Reset | **Completed** | `ADM-001` | Secure Argon2id reset with immediate in-memory token revocation. |
+| `ADM-005` | Cascading User Hard Deletion | **Completed** | `ADM-001` | Atomic removal of user, portfolios, ledgers, tax lots, and in-memory cache keys. |
 | `ADM-006` | Administrator Self-Protection | **Completed** | `ADM-005` | Block self-deletion and prevent deletion of last remaining admin. |
+| `ADM-007` | PostgreSQL Intraday Market Persistence | **Completed** | `MKT-004` | PostgreSQL `intraday_snapshots` table for resilient weekend & off-hours chart continuity. |
+| `ADM-008` | Zero-Dependency In-Memory Caching Layer | **Completed** | `BE-001` | Completely eliminated Redis in favor of thread-safe `InMemoryCache` with DB persistence. |

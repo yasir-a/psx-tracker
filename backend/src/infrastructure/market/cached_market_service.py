@@ -10,7 +10,7 @@ from src.domain.market.provider_interface import IMarketDataProvider
 from src.domain.market.quote import HistoricalPrice, MarketQuote
 from src.domain.market.security import Security
 from src.domain.values.money import Money
-from src.infrastructure.cache.redis_client import get_redis_client
+from src.infrastructure.cache.memory_cache import get_cache
 
 
 class CachedMarketService:
@@ -47,7 +47,7 @@ class CachedMarketService:
 
     def get_quote(self, symbol: str) -> MarketQuote | None:
         sym = symbol.upper().strip()
-        client = get_redis_client(self._settings)
+        client = get_cache()
 
         if client is not None:
             try:
@@ -75,7 +75,7 @@ class CachedMarketService:
         if not syms:
             return {}
 
-        client = get_redis_client(self._settings)
+        client = get_cache()
         quotes: dict[str, MarketQuote] = {}
         missing_symbols: list[str] = []
 
@@ -121,3 +121,33 @@ class CachedMarketService:
         end_date: date,
     ) -> list[HistoricalPrice]:
         return self._provider.get_historical_prices(symbol, start_date=start_date, end_date=end_date)
+
+    def get_security_details(self, symbol: str) -> dict[str, Any]:
+        """Fetch comprehensive details with 15-minute Redis cache to protect PSX from IP blocking."""
+        sym = symbol.upper().strip()
+        client = get_cache()
+
+        # 1. Check Redis Cache
+        if client is not None:
+            try:
+                cached = client.get(f"mkt:details:{sym}")
+                if cached:
+                    return json.loads(cached)
+            except Exception:
+                pass
+
+        # 2. Query provider (scrapes real live PSX DPS data)
+        if hasattr(self._provider, "get_security_details"):
+            data = self._provider.get_security_details(sym)
+        else:
+            from src.infrastructure.market.detailed_market_data import get_detailed_stock_intelligence
+            data = get_detailed_stock_intelligence(sym)
+
+        # 3. Store in Redis with 15-minute TTL (900 seconds)
+        if client is not None and data:
+            try:
+                client.setex(f"mkt:details:{sym}", 900, json.dumps(data))
+            except Exception:
+                pass
+
+        return data

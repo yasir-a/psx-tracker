@@ -1,191 +1,300 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SecurityDetails } from '../../../../types/market';
-import { Camera, Moon } from 'lucide-react';
+import { marketService, HistoricalPriceBar } from '../../../../services/marketService';
+import { Moon, Loader2 } from 'lucide-react';
 
 interface LiveTabProps {
   data: SecurityDetails;
 }
 
+type TimeframeKey = '1D' | '1M' | '6M' | 'YTD' | '1Y' | '3Y' | '5Y';
+
+interface ChartTick {
+  time: string;
+  price: number;
+  volume: number;
+}
+
 export const LiveTab: React.FC<LiveTabProps> = ({ data }) => {
-  const [timeframe, setTimeframe] = useState<'1D' | '1M' | '6M' | 'YTD' | '1Y' | '3Y' | '5Y'>('1D');
+  const [timeframe, setTimeframe] = useState<TimeframeKey>('1D');
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [historyCache, setHistoryCache] = useState<Record<string, ChartTick[]>>({});
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const isUp = data.change >= 0;
+  // 1D Ticks (default) from real backend intraday data
+  const intradayTicks: ChartTick[] = React.useMemo(() => {
+    if (data.intraday_ticks && data.intraday_ticks.length > 0) {
+      return data.intraday_ticks;
+    }
+    if (data.intraday_points && data.intraday_points.length > 0) {
+      return data.intraday_points.map((p, idx) => ({
+        time: `Tick #${idx + 1}`,
+        price: p,
+        volume: data.volume,
+      }));
+    }
+    return [
+      { time: '09:30 AM', price: data.previous_close, volume: data.volume },
+      { time: '03:30 PM', price: data.current_price, volume: data.volume },
+    ];
+  }, [data]);
 
-  // Day range slider percentage calculation
-  const dayRangeSpan = data.day_high - data.day_low || 1;
-  const dayRangePct = Math.min(100, Math.max(0, ((data.current_price - data.day_low) / dayRangeSpan) * 100));
+  // Load real historical data when switching timeframes beyond 1D
+  useEffect(() => {
+    if (timeframe === '1D') return;
 
-  // 52-week slider calculation
-  const yearRangeSpan = data.week_52_high - data.week_52_low || 1;
-  const yearRangePct = Math.min(100, Math.max(0, ((data.current_price - data.week_52_low) / yearRangeSpan) * 100));
+    if (historyCache[timeframe]) return; // Already cached in memory
+
+    const fetchHistory = async () => {
+      setIsLoadingHistory(true);
+      try {
+        let days = 30;
+        const now = new Date();
+        if (timeframe === '1M') days = 30;
+        else if (timeframe === '6M') days = 180;
+        else if (timeframe === 'YTD') {
+          const startOfYear = new Date(now.getFullYear(), 0, 1);
+          days = Math.ceil((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 5;
+        } else if (timeframe === '1Y') days = 365;
+        else if (timeframe === '3Y') days = 1095;
+        else if (timeframe === '5Y') days = 1825;
+
+        const bars: HistoricalPriceBar[] = await marketService.getHistoricalPrices(data.symbol, days);
+
+        // Sort ascending by trade_date
+        const sorted = [...bars].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
+        const mapped: ChartTick[] = sorted.map((b) => ({
+          time: new Date(b.trade_date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: timeframe === '3Y' || timeframe === '5Y' ? 'numeric' : undefined,
+          }),
+          price: b.close_price,
+          volume: b.volume,
+        }));
+
+        if (mapped.length > 0) {
+          setHistoryCache((prev) => ({ ...prev, [timeframe]: mapped }));
+        }
+      } catch (err) {
+        console.error('Failed to load historical prices for timeframe:', timeframe, err);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    fetchHistory();
+  }, [timeframe, data.symbol, historyCache]);
+
+  // Active chart ticks based on selected timeframe
+  const activeTicks = timeframe === '1D' ? intradayTicks : (historyCache[timeframe] || intradayTicks);
+
+  const prices = activeTicks.map((t) => t.price);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const priceMargin = (maxPrice - minPrice) * 0.1 || 0.5;
+  const chartMin = minPrice - priceMargin;
+  const chartMax = maxPrice + priceMargin;
+  const priceRange = chartMax - chartMin || 1;
+
+  // 5 levels for Y-Axis labels
+  const yTicks = [
+    chartMax,
+    chartMin + priceRange * 0.75,
+    chartMin + priceRange * 0.5,
+    chartMin + priceRange * 0.25,
+    chartMin,
+  ];
+
+  // SVG Coordinates
+  const coords = activeTicks.map((t, i) => {
+    const x = (i / (activeTicks.length - 1 || 1)) * 100;
+    const y = 90 - ((t.price - chartMin) / priceRange) * 80;
+    return { x, y, ...t };
+  });
+
+  const linePath = coords.reduce(
+    (acc, curr, i) => (i === 0 ? `M ${curr.x.toFixed(2)},${curr.y.toFixed(2)}` : `${acc} L ${curr.x.toFixed(2)},${curr.y.toFixed(2)}`),
+    ''
+  );
+  const areaPath = `${linePath} L 100,100 L 0,100 Z`;
+
+  const activeTick = hoverIndex !== null && coords[hoverIndex] ? coords[hoverIndex] : null;
+  const isUp = activeTick ? activeTick.price >= (activeTicks[0]?.price || data.previous_close) : data.change >= 0;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current || coords.length === 0) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const mouseX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const pct = mouseX / rect.width;
+    const closestIdx = Math.round(pct * (coords.length - 1));
+    setHoverIndex(closestIdx);
+  };
+
+  // Bottom Time Labels (start, middle, end)
+  const labelStart = activeTicks[0]?.time || 'Start';
+  const labelMid = activeTicks[Math.floor(activeTicks.length / 2)]?.time || 'Mid';
+  const labelEnd = activeTicks[activeTicks.length - 1]?.time || 'End';
 
   return (
     <div className="space-y-6 text-gray-900">
-      {/* Price Header Card */}
-      <div className="bg-gray-950 text-white p-5 rounded-2xl border border-gray-800 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-black tracking-tight text-white">
-                {data.current_price.toFixed(2)}
-              </span>
-              <span className={`text-base font-bold flex items-center ${isUp ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {isUp ? '▲ +' : '▼ '}{data.change.toFixed(2)} ({isUp ? '+' : ''}{data.change_percent.toFixed(2)}%)
-              </span>
-            </div>
-            <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-1.5">
-              <span>🕒 {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="bg-gray-800 text-gray-300 text-xs font-bold px-2.5 py-1 rounded-md border border-gray-700">
-              {data.market_status || 'REG'}
-            </span>
-            {data.is_shariah_compliant && (
-              <span className="bg-emerald-950 text-emerald-400 border border-emerald-700/60 p-1.5 rounded-md flex items-center gap-1 text-xs font-medium" title="Shariah Compliant">
-                <Moon className="w-3.5 h-3.5 fill-emerald-400" />
-              </span>
-            )}
-          </div>
+      {/* Header Info */}
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-4xl font-extrabold tracking-tight text-gray-950">
+            Rs.{activeTick ? activeTick.price.toFixed(2) : data.current_price.toFixed(2)}
+          </span>
+          <span className={`text-base font-bold ${isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+            {isUp ? '▲ +' : '▼ '}{data.change.toFixed(2)} ({isUp ? '+' : ''}{data.change_percent.toFixed(2)}%)
+          </span>
         </div>
-
-        {/* Intraday Chart Graphic Representation */}
-        <div className="mt-6 pt-4 border-t border-gray-800">
-          <div className="h-44 w-full flex items-end justify-between gap-1 px-2 py-4 bg-gray-900/60 rounded-xl relative overflow-hidden">
-            {/* SVG Wave Line */}
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-              <path
-                d="M 0,60 Q 20,40 40,55 T 80,30 T 100,70 L 100,100 L 0,100 Z"
-                fill={isUp ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)'}
-              />
-              <path
-                d="M 0,60 Q 20,40 40,55 T 80,30 T 100,70"
-                fill="none"
-                stroke={isUp ? '#10b981' : '#f43f5e'}
-                strokeWidth="2.5"
-              />
-            </svg>
-          </div>
-
-          {/* Timeframe selector pills */}
-          <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-800">
-            <div className="flex gap-1">
-              {(['1D', '1M', '6M', 'YTD', '1Y', '3Y', '5Y'] as const).map((tf) => (
-                <button
-                  key={tf}
-                  onClick={() => setTimeframe(tf)}
-                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                    timeframe === tf
-                      ? 'bg-amber-500 text-gray-950'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                  }`}
-                >
-                  {tf}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => alert('Screenshot captured!')}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium rounded-lg transition-colors border border-gray-700"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              Share Screenshot
-            </button>
-          </div>
+        <div className="text-xs font-medium text-gray-500">
+          ^ As of {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
         </div>
       </div>
 
-      {/* Stats Summary Card */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs space-y-5">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900 border-b pb-2">
-          Market Stats
-        </h3>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-            <div className="text-[11px] text-gray-500 font-semibold uppercase">Volume</div>
-            <div className="text-base font-bold text-gray-900 mt-0.5">{data.volume.toLocaleString()}</div>
-          </div>
-          <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-            <div className="text-[11px] text-gray-500 font-semibold uppercase">Open Price</div>
-            <div className="text-base font-bold text-gray-900 mt-0.5">PKR {data.open_price.toFixed(2)}</div>
-          </div>
-          <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-            <div className="text-[11px] text-gray-500 font-semibold uppercase">Last Day</div>
-            <div className="text-base font-bold text-gray-900 mt-0.5">PKR {data.previous_close.toFixed(2)}</div>
-          </div>
-        </div>
-
-        {/* Latest Quote (Bid / Ask) */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Latest Order Book Quote</h4>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="flex justify-between p-2.5 bg-emerald-50 text-emerald-900 rounded-lg border border-emerald-200">
-              <span className="font-semibold">Bid: PKR {data.bid_price.toFixed(2)}</span>
-              <span className="font-medium text-emerald-700">Vol: {data.bid_volume.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between p-2.5 bg-rose-50 text-rose-900 rounded-lg border border-rose-200">
-              <span className="font-semibold">Ask: PKR {data.ask_price.toFixed(2)}</span>
-              <span className="font-medium text-rose-700">Vol: {data.ask_volume.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Day's Range Slider */}
-        <div className="space-y-1.5 pt-2">
-          <div className="flex justify-between text-xs font-semibold">
-            <span className="text-gray-500 uppercase tracking-wider">Day's Range</span>
-          </div>
-          <div className="relative pt-4 pb-2">
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-500 rounded-full" style={{ width: `${dayRangePct}%` }}></div>
-            </div>
-            <div
-              className="absolute top-0 transform -translate-x-1/2 flex flex-col items-center"
-              style={{ left: `${dayRangePct}%` }}
+      {/* Timeframe Selector (1D Default) */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-1 p-1 bg-gray-100 border border-gray-200 rounded-lg">
+          {(['1D', '1M', '6M', 'YTD', '1Y', '3Y', '5Y'] as const).map((tf) => (
+            <button
+              key={tf}
+              onClick={() => {
+                setTimeframe(tf);
+                setHoverIndex(null);
+              }}
+              className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                timeframe === tf
+                  ? 'bg-emerald-700 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+              }`}
             >
-              <span className="text-[10px] font-bold bg-gray-900 text-white px-1.5 py-0.5 rounded shadow-xs">
-                {data.current_price.toFixed(2)}
-              </span>
-              <div className="w-1.5 h-1.5 bg-gray-900 rotate-45 -mt-0.5"></div>
-            </div>
-          </div>
-          <div className="flex justify-between text-xs font-bold text-gray-700">
-            <span>Low: PKR {data.day_low.toFixed(2)}</span>
-            <span>High: PKR {data.day_high.toFixed(2)}</span>
-          </div>
+              {tf}
+            </button>
+          ))}
         </div>
 
-        {/* 52-Week Range Slider */}
-        <div className="space-y-1.5 pt-2 border-t border-gray-100">
-          <div className="flex justify-between text-xs font-semibold">
-            <span className="text-gray-500 uppercase tracking-wider">52-Week Range</span>
+        {data.is_shariah_compliant && (
+          <span
+            className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md flex items-center gap-1.5 text-xs font-semibold"
+            title="Shariah Compliant"
+          >
+            <Moon className="w-3.5 h-3.5 fill-emerald-600" />
+            Shariah Compliant
+          </span>
+        )}
+      </div>
+
+      {/* PSX Terminal Style Chart Container */}
+      <div className="relative p-4 border shadow-xs bg-amber-50/20 border-amber-200/80 rounded-xl">
+        {isLoadingHistory && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 backdrop-blur-xs rounded-xl">
+            <Loader2 className="w-6 h-6 mr-2 animate-spin text-amber-600" />
+            <span className="text-xs font-semibold text-gray-700">Loading {timeframe} PSX historical prices...</span>
           </div>
-          <div className="relative pt-4 pb-2">
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${yearRangePct}%` }}></div>
-            </div>
+        )}
+
+        <div
+          ref={containerRef}
+          className="relative w-full select-none h-72 cursor-crosshair"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHoverIndex(null)}
+        >
+          {/* Background Grid Lines */}
+          <div className="absolute inset-0 grid grid-cols-6 grid-rows-4 pointer-events-none">
+            {[...Array(24)].map((_, i) => (
+              <div key={i} className="border-b border-r border-amber-200/50" />
+            ))}
+          </div>
+
+          {/* SVG Curve & Gradient Fill */}
+          <svg
+            className="absolute inset-0 w-full h-full"
+            preserveAspectRatio="none"
+            viewBox="0 0 100 100"
+          >
+            <defs>
+              <linearGradient id="psxAmberGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#d97706" stopOpacity="0.30" />
+                <stop offset="100%" stopColor="#fef3c7" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+
+            {/* Shaded Area Under Curve */}
+            <path d={areaPath} fill="url(#psxAmberGradient)" />
+
+            {/* Price Line Curve */}
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#d97706"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+
+            {/* Active Hover Point */}
+            {activeTick && (
+              <circle
+                cx={activeTick.x}
+                cy={activeTick.y}
+                r="3.5"
+                fill="#ffffff"
+                stroke="#d97706"
+                strokeWidth="2"
+              />
+            )}
+          </svg>
+
+          {/* Vertical Crosshair Line */}
+          {activeTick && (
             <div
-              className="absolute top-0 transform -translate-x-1/2 flex flex-col items-center"
-              style={{ left: `${yearRangePct}%` }}
-            >
-              <span className="text-[10px] font-bold bg-rose-600 text-white px-1.5 py-0.5 rounded shadow-xs">
-                {data.current_price.toFixed(2)}
+              className="absolute top-0 bottom-0 border-l pointer-events-none border-gray-400/80"
+              style={{ left: `${activeTick.x}%` }}
+            />
+          )}
+
+          {/* Right Y-Axis Price Labels */}
+          <div className="absolute top-0 bottom-0 right-1 flex flex-col justify-between pointer-events-none text-[10px] font-mono font-semibold text-gray-500">
+            {yTicks.map((p, idx) => (
+              <span key={idx} className="px-1 rounded bg-amber-50/80">
+                {p.toFixed(2)}
               </span>
-              <div className="w-1.5 h-1.5 bg-rose-600 rotate-45 -mt-0.5"></div>
+            ))}
+          </div>
+
+          {/* Floating Tooltip Callout Box Matching Screenshot */}
+          {activeTick && (
+            <div
+              className="absolute pointer-events-none bg-white border border-amber-400 rounded-lg shadow-lg p-2.5 z-20 text-xs transition-transform"
+              style={{
+                left: `${Math.min(75, Math.max(5, activeTick.x - 15))}%`,
+                top: `${Math.max(5, activeTick.y - 25)}%`,
+              }}
+            >
+              <div className="pb-1 mb-1 font-bold text-gray-900 border-b border-gray-100">
+                {activeTick.time}
+              </div>
+              <div className="grid grid-cols-2 font-mono gap-x-4 gap-y-1">
+                <span className="font-bold text-amber-600">{data.symbol}</span>
+                <span className="font-black text-right text-gray-900">
+                  {activeTick.price.toFixed(2)}
+                </span>
+                <span className="font-sans font-medium text-gray-500">Volume</span>
+                <span className="text-right text-gray-800">
+                  {activeTick.volume.toLocaleString()}
+                </span>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-between text-xs font-bold text-gray-700">
-            <span>52W Low: PKR {data.week_52_low.toFixed(2)}</span>
-            <span>52W High: PKR {data.week_52_high.toFixed(2)}</span>
-          </div>
+          )}
         </div>
 
-        {/* Circuit Breakers */}
-        <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs flex justify-between items-center text-amber-900 font-semibold">
-          <span>Circuit Breakers (Lower / Upper Lock)</span>
-          <span className="font-bold">PKR {data.circuit_lower.toFixed(2)} — PKR {data.circuit_upper.toFixed(2)}</span>
+        {/* Bottom Time / Date Axis Labels */}
+        <div className="flex justify-between px-2 pt-2 border-t border-amber-200/80 text-[11px] text-gray-500 font-medium">
+          <span>{labelStart}</span>
+          <span>{labelMid}</span>
+          <span>{labelEnd}</span>
         </div>
       </div>
     </div>

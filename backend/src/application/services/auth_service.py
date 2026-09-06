@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from src.api.errors import AppError, UnauthorizedError, ValidationError
 from src.config import get_settings
 from src.domain.entities.user import User
-from src.infrastructure.cache.redis_client import get_redis_client
+from src.infrastructure.cache.memory_cache import get_cache
 from src.infrastructure.db.repositories.pg_portfolio_repository import PgPortfolioRepository
 from src.infrastructure.db.repositories.pg_user_repository import PgUserRepository
 from src.infrastructure.security.password import hash_password, verify_password
@@ -106,7 +106,7 @@ class AuthService:
 
     def logout(self, token_jti: str, token_exp: int) -> None:
         """Revoke the current access token in Redis blacklist until expiration."""
-        client = get_redis_client(self._settings)
+        client = get_cache()
         if client is not None:
             now_ts = int(datetime.now(timezone.utc).timestamp())
             ttl = max(token_exp - now_ts, 1)

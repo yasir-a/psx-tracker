@@ -98,6 +98,11 @@ export interface CompetitorItem {
   dividend_yield: number;
   change: number;
 }
+export interface IntradayTick {
+  time: string;
+  price: number;
+  volume: number;
+}
 
 export interface SecurityDetails {
   symbol: string;
@@ -113,6 +118,7 @@ export interface SecurityDetails {
   week_52_low: number;
   week_52_high: number;
   volume: number;
+  intraday_points?: number[];
   bid_price: number;
   bid_volume: number;
   ask_price: number;
@@ -120,10 +126,11 @@ export interface SecurityDetails {
   circuit_lower: number;
   circuit_upper: number;
   is_shariah_compliant: boolean;
-  market_status: string;
+  market_status?: string;
   fundamentals: SecurityFundamentals;
   technicals: SecurityTechnicals;
   announcements: AnnouncementItem[];
   profile: CompanyProfile;
   competitors: CompetitorItem[];
+  intraday_ticks?: IntradayTick[];
 }

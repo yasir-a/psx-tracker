@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import Boolean, Date, Enum, Index, Numeric, String
+from typing import Any
+from sqlalchemy import Boolean, Date, DateTime, Enum, Index, JSON, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -42,3 +43,14 @@ class HistoricalPriceModel(Base):
     low_price: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False)
     close_price: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False)
     volume: Mapped[int] = mapped_column(default=0, nullable=False)
+
+
+class IntradaySnapshotModel(Base):
+    """SQLAlchemy model persisting full timestamped intraday tick histories for weekends and off-market hours."""
+
+    __tablename__ = "intraday_snapshots"
+
+    symbol: Mapped[str] = mapped_column(String(20), primary_key=True)
+    trade_date: Mapped[date] = mapped_column(Date, nullable=False)
+    ticks: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
