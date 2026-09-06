@@ -11,7 +11,6 @@ import { CorporateActionsView } from './components/features/corporate_actions/Co
 import { AnalyticsView } from './components/features/analytics/AnalyticsView';
 import { MarketView } from './components/features/market/MarketView';
 import { TaxReportView } from './components/features/tax/TaxReportView';
-import { AdminView } from './components/features/admin/AdminView';
 import { CreatePortfolioModal } from './components/features/portfolio/CreatePortfolioModal';
 import { TransferSharesModal } from './components/features/portfolio/TransferSharesModal';
 import { portfolioService, PortfolioListItem } from './services/portfolioService';
@@ -20,14 +19,14 @@ import { Button } from './components/ui/Button';
 import { PlusCircle, Wallet } from 'lucide-react';
 
 const MainApp: React.FC = () => {
-  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   const [portfolios, setPortfolios] = useState<PortfolioListItem[]>([]);
   const [activePortfolioId, setActivePortfolioId] = useState<string>('consolidated');
   const [valuationData, setValuationData] = useState<PortfolioValuationResponse | null>(null);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
-
+  
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<TransactionRecord | null>(null);
   const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
@@ -60,7 +59,7 @@ const MainApp: React.FC = () => {
       setValuationData(val);
       setTransactions(txs);
     } catch {
-      // Handled silently
+      // Handle error
     } finally {
       setIsActionLoading(false);
     }
@@ -68,28 +67,49 @@ const MainApp: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchPortfolios().then((ports) => {
-        if (ports.length > 0) {
+      fetchPortfolios().then((pList) => {
+        if (pList.length > 0) {
           refreshValuation(activePortfolioId);
+        } else {
+          // Clean empty state for new user
+          setValuationData({
+            portfolio: { id: 'consolidated', name: 'All Accounts', currency: 'PKR', is_consolidated: true },
+            summary: {
+              total_portfolio_value: 0,
+              total_stock_value: 0,
+              total_cost_basis: 0,
+              cash_balance: 0,
+              unrealized_gain: 0,
+              unrealized_return_pct: 0,
+              realized_gain: 0,
+              total_fees_paid: 0,
+              total_dividends_earned: 0,
+            },
+            holdings: [],
+          });
+          setTransactions([]);
         }
       });
     }
   }, [isAuthenticated, activePortfolioId]);
 
-  const handleCreateTrade = () => {
-    setEditingTx(null);
-    setIsTradeModalOpen(true);
+  const handleDeleteTransaction = async (portfolioId: string, txId: string) => {
+    try {
+      await portfolioService.deleteTransaction(portfolioId, txId);
+      showToast('Transaction deleted and lots updated successfully!');
+      refreshValuation(activePortfolioId);
+    } catch (err: any) {
+      showToast(err?.response?.data?.error?.message || 'Failed to delete transaction');
+    }
   };
 
   const handleDeletePortfolio = async (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+    if (confirm(`Are you sure you want to delete "${name}"?`)) {
       try {
         await portfolioService.deletePortfolio(id);
-        showToast(`Account "${name}" deleted successfully.`);
-        const updated = await fetchPortfolios();
-        if (activePortfolioId === id) {
-          setActivePortfolioId(updated.length > 0 ? 'consolidated' : '');
-        }
+        showToast(`Account "${name}" deleted successfully!`);
+        await fetchPortfolios();
+        setActivePortfolioId('consolidated');
       } catch (err: any) {
         showToast(
           err?.response?.data?.error?.message ||
@@ -130,17 +150,7 @@ const MainApp: React.FC = () => {
       onDeletePortfolio={handleDeletePortfolio}
     >
       {(activeTab) => {
-        // Allow Admin Dashboard even if admin has 0 broker accounts
-        if (activeTab === 'admin' && user?.role === 'admin') {
-          return <AdminView />;
-        }
-
-        // Allow PSX Market Data Terminal even if user has 0 accounts
-        if (activeTab === 'market') {
-          return <MarketView />;
-        }
-
-        if (!valuationData && portfolios.length > 0) {
+        if (!valuationData) {
           return (
             <div className="min-h-[50vh] flex items-center justify-center">
               <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-emerald-600"></div>
@@ -195,32 +205,27 @@ const MainApp: React.FC = () => {
               </div>
             )}
 
-            {activeTab === 'dashboard' && valuationData && (
+            {activeTab === 'dashboard' && (
               <DashboardView
                 data={valuationData}
-                onOpenTrade={handleCreateTrade}
+                onOpenTrade={() => {
+                  setEditingTx(null);
+                  setIsTradeModalOpen(true);
+                }}
               />
             )}
 
-            {activeTab === 'holdings' && valuationData && (
-              <HoldingsView holdings={valuationData.holdings} />
-            )}
+            {activeTab === 'holdings' && <HoldingsView holdings={valuationData.holdings} />}
 
             {activeTab === 'transactions' && (
               <TransactionsView
                 transactions={transactions}
-                onOpenTrade={handleCreateTrade}
-                onEditTransaction={handleEditTransaction}
-                onDeleteTransaction={async (portfolioId, transactionId) => {
-                  try {
-                    await portfolioService.deleteTransaction(portfolioId, transactionId);
-                    showToast('Transaction deleted successfully!');
-                    fetchPortfolios();
-                    refreshValuation(activePortfolioId);
-                  } catch (err: any) {
-                    showToast(err?.response?.data?.error?.message || 'Failed to delete transaction');
-                  }
+                onOpenTrade={() => {
+                  setEditingTx(null);
+                  setIsTradeModalOpen(true);
                 }}
+                onEditTransaction={handleEditTransaction}
+                onDeleteTransaction={handleDeleteTransaction}
               />
             )}
 
@@ -236,6 +241,8 @@ const MainApp: React.FC = () => {
             )}
 
             {activeTab === 'analytics' && <AnalyticsView portfolioId={activePortfolioId} />}
+
+            {activeTab === 'market' && <MarketView />}
 
             {activeTab === 'tax_report' && (
               <TaxReportView
@@ -257,6 +264,7 @@ const MainApp: React.FC = () => {
                 showToast(editingTx ? 'Transaction updated successfully!' : 'Transaction saved successfully!');
                 fetchPortfolios();
                 refreshValuation(activePortfolioId);
+                setEditingTx(null);
               }}
             />
 
@@ -272,11 +280,10 @@ const MainApp: React.FC = () => {
 
             <TransferSharesModal
               isOpen={isTransferModalOpen}
-              portfolios={portfolios}
               onClose={() => setIsTransferModalOpen(false)}
-              onSuccess={async () => {
-                showToast('Shares transferred successfully!');
-                await fetchPortfolios();
+              portfolios={portfolios}
+              onSuccess={() => {
+                showToast('Inter-account shares transferred successfully!');
                 refreshValuation(activePortfolioId);
               }}
             />
