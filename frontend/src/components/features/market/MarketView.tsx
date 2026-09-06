@@ -1,67 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
 import { Input } from '../../ui/Input';
+import { Button } from '../../ui/Button';
 import { marketService } from '../../../services/marketService';
 import { MarketQuote } from '../../../types/market';
 import { SecurityDetailModal } from './SecurityDetailModal';
-import { ChevronRight, BarChart2, Loader2 } from 'lucide-react';
+import { ChevronRight, BarChart2, Loader2, Search } from 'lucide-react';
 
 export const MarketView: React.FC = () => {
-  const [quotes, setQuotes] = useState<Record<string, MarketQuote>>({});
+  const [quote, setQuote] = useState<MarketQuote | null>(null);
   const [query, setQuery] = useState('');
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const topCatalogSymbols = [
-    'EFERT',
-    'ENGRO',
-    'SYS',
-    'FFC',
-    'OGDC',
-    'LUCK',
-    'HUBC',
-    'MCB',
-    'HBL',
-    'MEBL',
-    'PSO',
-    'UBL',
-    'BAFL',
-    'MARI',
-    'PPL',
-    'MLCF',
-    'DGKC',
-    'ATRL',
-    'AIRLINK',
-    'TRG',
-  ];
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const symbolToSearch = query.trim().toUpperCase();
+    if (!symbolToSearch) return;
 
-  useEffect(() => {
-    const fetchQuotes = async () => {
-      setIsLoading(true);
-      try {
-        const data = await marketService.getBulkQuotes(topCatalogSymbols);
-        if (data && typeof data === 'object') {
-          setQuotes(data);
-        }
-      } catch {
-        // Silently handle error
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    setErrorMessage(null);
+    setHasSearched(true);
+
+    try {
+      const data = await marketService.getQuote(symbolToSearch);
+      if (data && data.symbol) {
+        setQuote(data);
+      } else {
+        setQuote(null);
+        setErrorMessage(`Symbol "${symbolToSearch}" was not found on PSX.`);
       }
-    };
-    fetchQuotes();
-  }, []);
+    } catch (err: any) {
+      setQuote(null);
+      setErrorMessage(
+        err?.response?.data?.error?.message ||
+          `Failed to fetch quote for "${symbolToSearch}". Please check the symbol and try again.`
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const filtered = Object.values(quotes).filter(
-    (q): q is MarketQuote =>
-      Boolean(
-        q &&
-          typeof q === 'object' &&
-          typeof q.symbol === 'string' &&
-          q.symbol.toLowerCase().includes(query.toLowerCase())
-      )
-  );
+  const isUp = (quote?.change || 0) >= 0;
 
   return (
     <div className="space-y-6">
@@ -69,27 +52,49 @@ export const MarketView: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">PSX Market Data Terminal</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Click any security to launch interactive Live, Fundamentals, Technicals, Announcements & Profile terminal
+            Search any PSX symbol and press Enter to view real-time quote, technicals, and fundamentals
           </p>
         </div>
       </div>
 
       <Card>
-        <div className="mb-4 max-w-sm relative">
-          <Input
-            placeholder="Search symbol (e.g. EFERT, SYS, ENGRO)..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
+        {/* Search Input Bar with Enter Submit */}
+        <form onSubmit={handleSearch} className="mb-6 flex gap-2 max-w-md">
+          <div className="relative flex-1">
+            <Input
+              placeholder="Enter PSX symbol and hit Enter (e.g. EFERT, SYS, ENGRO)..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <Button type="submit" variant="primary" disabled={!query.trim() || isLoading}>
+            <Search className="w-4 h-4 mr-1" />
+            Search
+          </Button>
+        </form>
 
         {isLoading ? (
           <div className="py-16 flex flex-col items-center justify-center text-gray-500">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-3" />
-            <p className="text-xs font-semibold">Fetching live quotes from Pakistan Stock Exchange...</p>
+            <p className="text-xs font-semibold">
+              Fetching live quote for {query.toUpperCase()} from Pakistan Stock Exchange...
+            </p>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 text-sm">No securities found matching your search.</div>
+        ) : errorMessage ? (
+          <div className="text-center py-12 text-rose-600 text-sm font-medium bg-rose-50/50 rounded-xl border border-rose-100">
+            {errorMessage}
+          </div>
+        ) : !hasSearched || !quote ? (
+          <div className="text-center py-16 text-gray-400 text-sm">
+            <Search className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+            <p className="font-medium text-gray-600">No symbol searched yet</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Type a stock ticker like <span className="font-semibold text-emerald-700">EFERT</span>,{' '}
+              <span className="font-semibold text-emerald-700">SYS</span>, or{' '}
+              <span className="font-semibold text-emerald-700">ENGRO</span> and hit Enter.
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
@@ -105,44 +110,38 @@ export const MarketView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filtered.map((q) => {
-                  const isUp = (q.change || 0) >= 0;
-                  return (
-                    <tr
-                      key={q.symbol}
-                      onClick={() => setSelectedSymbol(q.symbol)}
-                      className="hover:bg-emerald-50/50 transition-colors cursor-pointer group"
-                    >
-                      <td className="px-4 py-3.5 font-bold text-gray-900 group-hover:text-emerald-700 flex items-center gap-2">
-                        <span className="bg-gray-100 text-gray-900 px-2 py-0.5 rounded border group-hover:bg-emerald-100 group-hover:border-emerald-300">
-                          {q.symbol}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 font-bold text-gray-900">
-                        PKR {(q.current_price || 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3.5 text-gray-600">
-                        PKR {(q.previous_close || 0).toFixed(2)}
-                      </td>
-                      <td className={`px-4 py-3.5 font-medium ${isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {isUp ? '+' : ''}{(q.change || 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <Badge variant={isUp ? 'green' : 'red'}>
-                          {isUp ? '+' : ''}{(q.change_percent || 0).toFixed(2)}%
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3.5 text-gray-500">{(q.volume || 0).toLocaleString()}</td>
-                      <td className="px-4 py-3.5 text-right">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white transition-colors border border-emerald-200">
-                          <BarChart2 className="w-3.5 h-3.5" />
-                          View Details
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                <tr
+                  onClick={() => setSelectedSymbol(quote.symbol)}
+                  className="hover:bg-emerald-50/50 transition-colors cursor-pointer group"
+                >
+                  <td className="px-4 py-3.5 font-bold text-gray-900 group-hover:text-emerald-700 flex items-center gap-2">
+                    <span className="bg-gray-100 text-gray-900 px-2.5 py-1 rounded-md border text-xs font-bold group-hover:bg-emerald-100 group-hover:border-emerald-300">
+                      {quote.symbol}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5 font-bold text-gray-900">
+                    PKR {(quote.current_price || 0).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-3.5 text-gray-600">
+                    PKR {(quote.previous_close || 0).toFixed(2)}
+                  </td>
+                  <td className={`px-4 py-3.5 font-medium ${isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {isUp ? '+' : ''}{(quote.change || 0).toFixed(2)}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Badge variant={isUp ? 'green' : 'red'}>
+                      {isUp ? '+' : ''}{(quote.change_percent || 0).toFixed(2)}%
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3.5 text-gray-500">{(quote.volume || 0).toLocaleString()}</td>
+                  <td className="px-4 py-3.5 text-right">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white transition-colors border border-emerald-200 shadow-2xs">
+                      <BarChart2 className="w-3.5 h-3.5" />
+                      View Details
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>

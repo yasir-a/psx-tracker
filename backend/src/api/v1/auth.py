@@ -68,6 +68,7 @@ def login() -> tuple[Response, int]:
             "id": str(user.id),
             "email": user.email,
             "full_name": user.full_name,
+            "role": user.role,
             "created_at": user.created_at.isoformat(),
         },
         "tokens": {
@@ -119,6 +120,7 @@ def get_me() -> tuple[Response, int]:
             "id": str(user.id),
             "email": user.email,
             "full_name": user.full_name,
+            "role": user.role,
             "is_active": user.is_active,
             "created_at": user.created_at.isoformat(),
         }

@@ -64,9 +64,9 @@ class AuthService:
         saved_user = self._user_repo.save(user)
 
         # 5. Issue tokens
-        access_token, _, _ = self._token_service.create_token(saved_user.id, "access")
-        refresh_token, _, _ = self._token_service.create_token(saved_user.id, "refresh")
-
+        access_token, _, _ = self._token_service.create_token(saved_user.id, "access", role=saved_user.role)
+        refresh_token, _, _ = self._token_service.create_token(saved_user.id, "refresh", role=saved_user.role)
+    
         return saved_user, access_token, refresh_token
 
     def login(self, email: str, password: str) -> tuple[User, str, str]:
@@ -80,8 +80,8 @@ class AuthService:
         if not verify_password(user.password_hash, password):
             raise UnauthorizedError("Invalid email or password")
 
-        access_token, _, _ = self._token_service.create_token(user.id, "access")
-        refresh_token, _, _ = self._token_service.create_token(user.id, "refresh")
+        access_token, _, _ = self._token_service.create_token(user.id, "access", role=user.role)
+        refresh_token, _, _ = self._token_service.create_token(user.id, "refresh", role=user.role)
 
         return user, access_token, refresh_token
 
@@ -94,9 +94,9 @@ class AuthService:
         if not user or not user.is_active:
             raise UnauthorizedError("User inactive or no longer exists")
 
-        new_access_token, _, _ = self._token_service.create_token(user.id, "access")
-        new_refresh_token, _, _ = self._token_service.create_token(user.id, "refresh")
-
+        new_access_token, _, _ = self._token_service.create_token(user.id, "access", role=user.role)
+        new_refresh_token, _, _ = self._token_service.create_token(user.id, "refresh", role=user.role)
+        
         return new_access_token, new_refresh_token
 
     def refresh_access_token(self, refresh_token_str: str) -> str:
@@ -125,5 +125,7 @@ class AuthService:
             "id": str(user.id),
             "email": user.email,
             "full_name": user.full_name,
+            "role": user.role,
+            "is_active": user.is_active,
             "created_at": user.created_at.isoformat(),
         }

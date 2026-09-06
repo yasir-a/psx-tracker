@@ -23,3 +23,12 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  role: 'user' | 'admin';
+  is_active: boolean;
+  created_at: string;
+}

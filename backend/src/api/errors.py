@@ -40,6 +40,14 @@ class ValidationError(AppError):
             details=details,
         )
 
+class BadRequestError(AppError):
+    def __init__(self, message: str = "Bad request", details: dict[str, Any] | None = None) -> None:
+        super().__init__(
+            message=message,
+            code="BAD_REQUEST",
+            status_code=400,
+            details=details,
+        )
 
 class NotFoundError(AppError):
     def __init__(self, message: str = "Resource not found", details: dict[str, Any] | None = None) -> None:

@@ -6,7 +6,7 @@ from uuid import UUID
 from flask import g, request
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
-from src.api.errors import AppError, UnauthorizedError
+from src.api.errors import AppError, ForbiddenError, UnauthorizedError
 from src.infrastructure.security.rate_limiter import RateLimiter
 from src.infrastructure.security.token_service import TokenService
 
@@ -35,8 +35,35 @@ def jwt_required(f: Callable[..., Any]) -> Callable[..., Any]:
             raise UnauthorizedError("Access token required")
 
         g.current_user_id = UUID(payload["sub"])
+        g.current_user_role = payload.get("role", "user")
         g.token_jti = payload.get("jti")
         g.token_exp = payload.get("exp")
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator enforcing that the authenticated caller has the 'admin' role."""
+
+    @wraps(f)
+    def decorated(*args: Any, **kwargs: Any) -> Any:
+        # If jwt_required was not already applied, ensure current user exists
+        if not hasattr(g, "current_user_id"):
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise UnauthorizedError("Missing or invalid Authorization header")
+            token = auth_header.split(" ", 1)[1].strip()
+            try:
+                payload = _token_service.decode_token(token)
+                g.current_user_id = UUID(payload["sub"])
+                g.current_user_role = payload.get("role", "user")
+            except Exception as e:
+                raise UnauthorizedError(f"Invalid token: {str(e)}")
+
+        if getattr(g, "current_user_role", None) != "admin":
+            raise ForbiddenError("Administrator privileges required for this action")
+
         return f(*args, **kwargs)
 
     return decorated
@@ -58,6 +85,7 @@ def rate_limit(max_requests: int = 10, window_seconds: int = 60) -> Callable[...
                     code="RATE_LIMIT_EXCEEDED",
                     status_code=429,
                 )
+
             return f(*args, **kwargs)
 
         return decorated

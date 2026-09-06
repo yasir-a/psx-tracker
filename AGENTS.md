@@ -137,7 +137,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 12 — Completed & Operational (Comprehensive PSX Market Data Terminal)**
+* **Current Phase:** **Phase 13 — Completed & Operational (Admin User & Security Management)**
 * **Status:** Complete production-grade PSX Portfolio Tracker:
   - Ledger-grade FIFO lot accounting & multi-account broker management (*Darson*, *BMA*, *CDC IAS*, inter-account share transfers, and consolidated views).
   - Corporate Actions engine (15% Filer / 30% Non-Filer WHT, Zakat deductions, Bonus shares, Rights, Splits with record-date aware validation).
@@ -145,4 +145,5 @@ psx-tracker/
   - KSE-100 Benchmark Performance Comparison (Alpha / Beta) and Sector Concentration Risk visualizers.
   - One-click PostgreSQL backup utility (`C:\psx-tracker-backup`) and Excel / CSV transaction ledger export.
   - **Phase 12 Market Terminal**: Interactive full-featured financial terminal for PSX stocks with **Live** (intraday charts, day/52-week sliders, circuit breakers), **Fundamentals** (EPS, P/E, profit margins, ROE/ROA, dividend payouts), **Technicals** (RSI, STOCH, MACD, S1-S3/R1-R3 pivot points, SMAs), **Announcements** (official filings & PDF downloads), **Profile** (free float, executive team, head office, auditor), and **Competitors** (peer sector comparison).
+  - **Phase 13 Admin Management**: Server-side role-based authorization (`@admin_required`), dedicated CLI setup script (`backend/scripts/setup_admin.py`), user directory dashboard, Argon2id password reset with Redis token invalidation, cascading atomic hard-deletion of user accounts, and self-protection safeguards.
   - 100% automated test suite passing (38 tests) with clean TypeScript Vite frontend builds.

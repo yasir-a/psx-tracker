@@ -36,6 +36,12 @@ class UserModel(Base, TimestampMixin):
         String(255),
         nullable=False,
     )
+    role: Mapped[str] = mapped_column(
+        String(20),
+        default="user",
+        index=True,
+        nullable=False,
+    )
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         default=True,

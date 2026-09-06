@@ -10,16 +10,22 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from src.app import create_app
-from src.config import TestingSettings
+from src.config import TestingSettings, get_settings
 from src.infrastructure.db.base import Base
 import src.infrastructure.db.models  # noqa: F401
 import src.infrastructure.db.session as db_session_module
-from src.infrastructure.market.provider_factory import get_market_service
+from src.infrastructure.market.provider_factory import get_market_service, get_market_provider
 
 
 @pytest.fixture(scope="session", autouse=True)
 def ensure_mock_market_provider():
     """Ensure market service uses MockMarketDataProvider in test suite."""
+    os.environ["FLASK_ENV"] = "testing"
+    os.environ["ENV"] = "testing"
+    get_settings.cache_clear()
+    get_market_service.cache_clear()
+    yield
+    get_settings.cache_clear()
     get_market_service.cache_clear()
 
 

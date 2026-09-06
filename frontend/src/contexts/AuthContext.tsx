@@ -24,10 +24,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           setTokens(JSON.parse(storedTokens));
           setUser(JSON.parse(storedUser));
-          // Refresh user state in background
+          // Always refresh live user state and role from backend
           const me = await authService.getMe();
-          setUser(me.user);
-          localStorage.setItem('psx_auth_user', JSON.stringify(me.user));
+          if (me && me.user) {
+            setUser(me.user);
+            localStorage.setItem('psx_auth_user', JSON.stringify(me.user));
+          }
         } catch {
           localStorage.removeItem('psx_auth_tokens');
           localStorage.removeItem('psx_auth_user');
@@ -58,11 +60,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    setTokens(null);
-    localStorage.removeItem('psx_auth_tokens');
-    localStorage.removeItem('psx_auth_user');
+    try {
+      await authService.logout();
+    } catch {
+      // Ignored
+    } finally {
+      localStorage.removeItem('psx_auth_tokens');
+      localStorage.removeItem('psx_auth_user');
+      setUser(null);
+      setTokens(null);
+    }
   };
 
   return (
@@ -70,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         tokens,
-        isAuthenticated: !!user,
+        isAuthenticated: !!tokens && !!user,
         isLoading,
         login,
         register,
@@ -82,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
