@@ -126,8 +126,8 @@ const MainApp: React.FC = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-emerald-600"></div>
       </div>
     );
   }
@@ -153,7 +153,7 @@ const MainApp: React.FC = () => {
         if (!valuationData) {
           return (
             <div className="min-h-[50vh] flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-emerald-600"></div>
             </div>
           );
         }
@@ -162,11 +162,11 @@ const MainApp: React.FC = () => {
         if (portfolios.length === 0) {
           return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6 bg-white border border-gray-200 rounded-2xl shadow-xs my-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+              <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-emerald-50 text-emerald-600">
                 <Wallet className="w-8 h-8" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Welcome to PSX Portfolio Tracker</h2>
-              <p className="text-sm text-gray-500 max-w-md mb-6">
+              <h2 className="mb-1 text-xl font-bold text-gray-900">Welcome to PSX Portfolio Tracker</h2>
+              <p className="max-w-md mb-6 text-sm text-gray-500">
                 You don't have any portfolio accounts yet. Add your first broker account (e.g., Darson Securities, BMA Capital) or CDC Investor Account to get started!
               </p>
               <Button variant="primary" onClick={() => setIsCreateAccountOpen(true)}>
@@ -191,7 +191,7 @@ const MainApp: React.FC = () => {
           <>
             {/* Toast Notification Banner */}
             {toastMessage && (
-              <div className="fixed bottom-5 right-5 z-50 bg-gray-900 text-white text-xs px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 border border-gray-700 animate-fade-in">
+              <div className="fixed z-50 flex items-center gap-2 px-4 py-3 text-xs text-white bg-gray-900 border border-gray-700 shadow-lg bottom-5 right-5 rounded-xl animate-fade-in">
                 <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                 {toastMessage}
               </div>

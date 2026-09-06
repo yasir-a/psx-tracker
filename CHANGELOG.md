@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 13: Admin User & Security Management**
+  - Proper server-side role-based authorization (`@admin_required`) distinguishing `user` and `admin` roles across all admin endpoints.
+  - Interactive CLI administration tool (`backend/scripts/setup_admin.py`) for promoting existing users or creating dedicated administrator accounts without plaintext hardcoded credentials.
+  - Interactive Admin Dashboard view in React frontend with search, user directory table, portfolio counts, and role badges.
+  - Secure user password reset mechanism using Argon2id hashing with immediate user session and token invalidation via Redis (`revoke_all_user_tokens`).
+  - Atomic cascading hard-deletion of user accounts removing all associated portfolios, cash ledgers, transactions, tax lots, and corporate actions from PostgreSQL and clearing user-specific Redis keys.
+  - Robust self-protection safeguards preventing administrators from deleting their own accounts or deleting the last remaining administrator in the system.
 - **Phase 12: Comprehensive PSX Market Data Terminal**
   - Interactive full-featured financial terminal for PSX equities modeled on mobile terminal reference designs.
   - **Live Sub-Tab**: Real-time quotes, intraday SVG wave chart with multi-timeframe toggles (`1D`, `1M`, `6M`, `YTD`, `1Y`, `3Y`, `5Y`), volume, open price, last day close, Bid/Ask quotes, interactive Day Range slider, 52-Week Range slider, and circuit breakers.

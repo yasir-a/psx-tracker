@@ -8,11 +8,13 @@ from src.api.v1.health import health_bp
 from src.api.v1.market import market_bp
 from src.api.v1.portfolio import portfolio_bp
 from src.api.v1.system import system_bp
+from src.api.v1.admin import admin_bp
 
 v1_bp = Blueprint("v1", __name__, url_prefix="/api/v1")
 
 v1_bp.register_blueprint(health_bp)
 v1_bp.register_blueprint(auth_bp)
+v1_bp.register_blueprint(admin_bp)
 v1_bp.register_blueprint(portfolio_bp)
 v1_bp.register_blueprint(market_bp)
 v1_bp.register_blueprint(corporate_actions_bp)

@@ -55,26 +55,42 @@ class DevelopmentSettings(Settings):
     DEBUG: bool = True
     DATABASE_URL: str = "postgresql+psycopg://psx_user:Dai7aWu7ae@localhost:5432/psx_portfolio"
 
+    model_config = SettingsConfigDict(
+        env_file=None,
+        extra="ignore",
+    )
+
 class TestingSettings(Settings):
     __test__ = False
     ENV: Literal["development", "testing", "production"] = "testing"
     DEBUG: bool = True
-    DATABASE_URL: str = "postgresql://psx_user:psx_password@localhost:5432/psx_portfolio_test"
+    DATABASE_URL: str = "sqlite:///:memory:"
     REDIS_URL: str = "redis://localhost:6379/1"
     JWT_SECRET_KEY: str = "testing-jwt-secret-key-1234567890"
     MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "mock"
+
+    model_config = SettingsConfigDict(
+        env_file=None,  # Do not read .env in test settings
+        extra="ignore",
+    )
 
 
 class ProductionSettings(Settings):
     ENV: Literal["development", "testing", "production"] = "production"
     DEBUG: bool = False
+    DATABASE_URL: str = "postgresql+psycopg://psx_user:Dai7aWu7ae@localhost:5432/psx_portfolio"
     MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "psx_scraper"
+
+    model_config = SettingsConfigDict(
+        env_file=None,  # Do not read .env in production settings
+        extra="ignore",
+    )
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Retrieve and cache settings based on FLASK_ENV or APP_ENV."""
-    env = os.getenv("FLASK_ENV", os.getenv("APP_ENV", "development")).lower()
+    env = os.getenv("FLASK_ENV", os.getenv("APP_ENV", os.getenv("ENV", "development"))).lower()
     if env == "testing":
         return TestingSettings()
     elif env == "production":

@@ -118,3 +118,14 @@ Status definitions:
 | `MKT-006` | Technical Indicators & Pivots | **Completed** | `MKT-004` | RSI(14), STOCH, MACD, S1-S3 / R1-R3 Pivot Points, SMA5-150. |
 | `MKT-007` | Corporate Announcements & Filings | **Completed** | `MKT-004` | Quarterly reports, corporate briefings, board meetings, PDF downloads. |
 | `MKT-008` | Company Profile & Competitors | **Completed** | `MKT-004` | Free float %, market cap, executive team, address, auditor, sector peer comparison. |
+
+## Phase 13: Admin User & Security Management
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `ADM-001` | Role-Based Access Control | **Completed** | `AUTH-001` | `user` vs `admin` roles, `@admin_required` server-side enforcement. |
+| `ADM-002` | Admin CLI Setup Tool | **Completed** | `ADM-001` | `setup_admin.py` for promoting or creating dedicated admin accounts. |
+| `ADM-003` | Admin User Directory Dashboard | **Completed** | `ADM-001` | Search, user table, role badges, portfolio counts, created timestamp. |
+| `ADM-004` | Admin Password Reset | **Completed** | `ADM-001` | Secure Argon2id reset with immediate Redis token revocation. |
+| `ADM-005` | Cascading User Hard Deletion | **Completed** | `ADM-001` | Atomic removal of user, portfolios, ledgers, tax lots, and Redis keys. |
+| `ADM-006` | Administrator Self-Protection | **Completed** | `ADM-005` | Block self-deletion and prevent deletion of last remaining admin. |
