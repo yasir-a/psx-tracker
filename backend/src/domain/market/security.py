@@ -28,6 +28,7 @@ class SecuritySector(str, Enum):
     FOOD_AND_PERSONAL_CARE = "Food & Personal Care Products"
     TEXTILE_COMPOSITE = "Textile Composite"
     REFINERY = "Refinery"
+    REAL_ESTATE_INVESTMENT_TRUST = "Real Estate Investment Trust" 
     MISCELLANEOUS = "Miscellaneous"
 
 

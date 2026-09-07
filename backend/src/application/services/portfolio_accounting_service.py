@@ -16,6 +16,7 @@ from src.domain.values.quantity import Quantity
 from src.infrastructure.db.repositories.pg_portfolio_repository import PgPortfolioRepository
 from src.infrastructure.db.repositories.pg_transaction_repository import PgTransactionRepository
 from src.infrastructure.market.provider_factory import get_market_service
+from src.infrastructure.db.repositories.pg_security_repository import PgSecurityRepository
 
 
 class PortfolioAccountingService:
@@ -25,6 +26,7 @@ class PortfolioAccountingService:
         self._session = session
         self._portfolio_repo = PgPortfolioRepository(session)
         self._tx_repo = PgTransactionRepository(session)
+        self._security_repo = PgSecurityRepository(session)
         self._market_service = get_market_service()
 
     def get_user_portfolios(self, user_id: UUID) -> list[dict[str, Any]]:
@@ -342,10 +344,26 @@ class PortfolioAccountingService:
             curr_price = float(quote.current_price.amount) if quote else float(h.cost_per_share.amount)
             market_val = curr_price * float(h.quantity.value)
             cost_basis = float(h.total_cost_basis.amount)
-            unrealized = market_val - cost_basis
-            unrealized_pct = ((unrealized / cost_basis) * 100) if cost_basis > 0 else 0.0
+            unrealized = round(market_val - cost_basis, 2)
+            unrealized_pct = round((unrealized / cost_basis) * 100, 2) if cost_basis > 0 else 0.0
             day_change = float(quote.change.amount) if quote else 0.0
             day_change_pct = float(quote.change_percent) if quote else 0.0
+
+            # Lookup company name and sector metadata from Market Service / Database
+            sec_meta = self._security_repo.get_by_symbol(sym)
+            if not sec_meta or not sec_meta.sector or sec_meta.sector == "Miscellaneous":
+                fresh_meta = self._market_service.get_security_metadata(sym)
+                if fresh_meta and fresh_meta.sector != "Miscellaneous":
+                    if sec_meta:
+                        sec_meta.name = fresh_meta.name
+                        sec_meta.sector = fresh_meta.sector
+                        sec_meta = self._security_repo.save(sec_meta)
+                    else:
+                        sec_meta = self._security_repo.save(fresh_meta)
+                    self._session.flush()
+
+            company_name = sec_meta.name if sec_meta else f"{sym} Limited"
+            sector_name = sec_meta.sector if sec_meta and sec_meta.sector else "Miscellaneous"
 
             lots_data = [
                 {
@@ -363,6 +381,8 @@ class PortfolioAccountingService:
 
             holdings_list.append({
                 "symbol": sym,
+                "name": company_name,
+                "sector": sector_name,
                 "quantity": float(h.quantity.value),
                 "cost_per_share": float(h.cost_per_share.amount),
                 "total_cost_basis": cost_basis,
@@ -388,8 +408,8 @@ class PortfolioAccountingService:
                 "total_stock_value": float(valuation.total_market_value.amount),
                 "total_cost_basis": float(valuation.total_cost_basis.amount),
                 "cash_balance": float(valuation.cash_balance.amount),
-                "unrealized_gain": float(valuation.unrealized_gain.amount),
-                "unrealized_return_pct": float(valuation.unrealized_return_pct),
+                "unrealized_gain": round(float(valuation.unrealized_gain.amount), 2),
+                "unrealized_return_pct": round(float(valuation.unrealized_return_pct), 2),
                 "realized_gain": float(valuation.realized_gain.amount),
                 "total_fees_paid": float(valuation.total_fees_paid.amount),
                 "total_dividends_earned": float(valuation.total_dividends.amount),

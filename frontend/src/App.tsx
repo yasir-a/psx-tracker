@@ -215,7 +215,13 @@ const MainApp: React.FC = () => {
               />
             )}
 
-            {activeTab === 'holdings' && <HoldingsView holdings={valuationData.holdings} />}
+            {activeTab === 'holdings' && 
+              <HoldingsView 
+                holdings={valuationData.holdings} 
+                portfolioName={
+                  activePortfolioId === 'consolidated'? 'All Accounts': portfolios.find((p) => p.id === activePortfolioId)?.name || 'Portfolio'
+                }
+            />}
 
             {activeTab === 'transactions' && (
               <TransactionsView

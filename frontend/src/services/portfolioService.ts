@@ -67,6 +67,7 @@ export const portfolioService = {
       quantity?: number;
       price_per_share?: number;
       brokerage_fee?: number;
+      regulatory_fee?: number;
       executed_at?: string;
       notes?: string;
     }
@@ -87,6 +88,7 @@ export const portfolioService = {
       quantity?: number;
       price_per_share?: number;
       brokerage_fee?: number;
+      regulatory_fee?: number;
       notes?: string;
     }
   ): Promise<TransactionRecord> {

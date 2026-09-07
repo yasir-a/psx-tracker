@@ -65,6 +65,8 @@ def test_full_portfolio_trade_lifecycle_and_valuation(client: FlaskClient) -> No
     engro = val_data["holdings"][0]
     assert engro["symbol"] == "ENGRO"
     assert engro["quantity"] == 500
+    assert "sector" in engro
+    assert "name" in engro
     assert len(engro["open_lots"]) == 1
 
     # 6. SELL 200 Shares of ENGRO @ 350 PKR

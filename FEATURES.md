@@ -131,3 +131,10 @@ Status definitions:
 | `ADM-006` | Administrator Self-Protection | **Completed** | `ADM-005` | Block self-deletion and prevent deletion of last remaining admin. |
 | `ADM-007` | PostgreSQL Intraday Market Persistence | **Completed** | `MKT-004` | PostgreSQL `intraday_snapshots` table for resilient weekend & off-hours chart continuity. |
 | `ADM-008` | Zero-Dependency In-Memory Caching Layer | **Completed** | `BE-001` | Completely eliminated Redis in favor of thread-safe `InMemoryCache` with DB persistence. |
+
+## Phase 14: Account Deductions & Fee Recording
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `TX-005` | Account Fee & Deduction Recording | **Completed** | `ACC-001` | Record 8 predefined deduction types (UIN Fees, CGT Debit, Custody, SST, CDC, Stamp Paper, KYC, SMS) deducting directly from broker/CDC cash balance. |
+

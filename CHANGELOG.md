@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 14: Account Deductions & Fee Recording**
+  - Added support for recording account-level fee deductions (such as UIN FEES, CGT Debit, Custody Charges, SST FEES, CDC Transaction Fee, Stamp Paper Fee, KYC FEES, SMS Charges) directly impacting cash deposit balances of Broker and CDC accounts.
+  - Updated `PortfolioReplayer` and `Transaction.net_amount` to handle fee accounting seamlessly without altering share holdings or tax lots.
+  - Interactive Transaction Modal with deduction category selector and automated ledger notes tagging.
+  - Transaction Ledger filter pill and badge highlighting for fee deductions.
 - **Phase 13: Admin User & Security Management**
   - Proper server-side role-based authorization (`@admin_required`) distinguishing `user` and `admin` roles across all admin endpoints.
   - Interactive CLI administration tool (`backend/scripts/setup_admin.py`) for promoting existing users or creating dedicated administrator accounts without plaintext hardcoded credentials.

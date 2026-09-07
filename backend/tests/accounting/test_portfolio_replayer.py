@@ -84,3 +84,32 @@ def test_full_portfolio_replayer_lifecycle() -> None:
     # Cash = 500k deposit - 400,400 buy + 179,800 sell net = 279,400 PKR (dividends tracked separately)
     assert valuation.cash_balance.amount == Decimal("279400.0000")
     assert valuation.total_dividends.amount == Decimal("4250.0000")
+
+
+
+def test_fee_deduction_reduces_cash_balance() -> None:
+    portfolio_id = uuid4()
+    t0 = datetime(2026, 1, 1, 9, 30, tzinfo=timezone.utc)
+
+    transactions = [
+        # Deposit 100,000 PKR
+        Transaction(
+            portfolio_id=portfolio_id,
+            transaction_type=TransactionType.CASH_DEPOSIT,
+            price_per_share=Money(Decimal("100000.00")),
+            executed_at=t0,
+        ),
+        # Fee deduction: UIN FEES 300 PKR
+        Transaction(
+            portfolio_id=portfolio_id,
+            transaction_type=TransactionType.FEE,
+            regulatory_fee=Money(Decimal("300.00")),
+            price_per_share=Money(Decimal("300.00")),
+            notes="[UIN FEES] Annual maintenance",
+            executed_at=t0 + timedelta(days=1),
+        ),
+    ]
+
+    valuation = PortfolioReplayer.replay(transactions)
+    assert valuation.cash_balance.amount == Decimal("99700.0000")
+    assert valuation.total_fees_paid.amount == Decimal("300.0000")

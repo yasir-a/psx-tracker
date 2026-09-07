@@ -25,7 +25,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>(
     activePortfolioId === 'consolidated' ? (portfolios[0]?.id || '') : activePortfolioId
   );
-  const [type, setType] = useState<'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'DIVIDEND_CASH'>('BUY');
+  
+    const [type, setType] = useState<'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'DIVIDEND_CASH' | 'FEE'>('BUY');
+  const [deductionReason, setDeductionReason] = useState<string>('UIN FEES');
   const [symbol, setSymbol] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
@@ -35,13 +37,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const DEDUCTION_CATEGORIES = [
+    'UIN FEES',
+    'CGT Debit',
+    'Custody Charges',
+    'SST FEES',
+    'CDC Transaction Fee',
+    'Stamp Paper Fee',
+    'KYC FEES',
+    'SMS Charges',
+    'Other Fee / Charge',
+  ];
+
   const isCash = type === 'CASH_DEPOSIT' || type === 'CASH_WITHDRAWAL';
   const isDividend = type === 'DIVIDEND_CASH';
+  const isFee = type === 'FEE';
 
-  const availablePortfolios = isCash
+  const availablePortfolios = (isCash || isFee)
     ? portfolios
     : portfolios.filter((p) => !p.name.toLowerCase().includes('cdc'));
-
+    
   useEffect(() => {
     if (editingTransaction) {
       setSelectedPortfolioId(editingTransaction.portfolio_id);
@@ -79,26 +94,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     try {
       const execDate = new Date(executedAt);
       execDate.setHours(10, 0, 0, 0);
+      const finalNotes = isFee
+        ? (notes ? `[${deductionReason}] ${notes}` : `[${deductionReason}] Account deduction`)
+        : (notes || undefined);
 
       if (editingTransaction) {
         await portfolioService.updateTransaction(selectedPortfolioId, editingTransaction.id, {
-          symbol: isCash ? undefined : symbol.toUpperCase().trim(),
-          quantity: isCash ? undefined : parseFloat(quantity),
+          symbol: (isCash || isFee) ? undefined : symbol.toUpperCase().trim(),
+          quantity: (isCash || isFee) ? undefined : parseFloat(quantity),
           price_per_share: parseFloat(price),
-          brokerage_fee: isCash ? 0 : parseFloat(fee || '0'),
-          notes: notes || undefined,
+          brokerage_fee: (isCash || isFee) ? 0 : parseFloat(fee || '0'),
+          notes: finalNotes,
         });
       } else {
         await portfolioService.createTransaction(selectedPortfolioId, {
           transaction_type: type,
-          symbol: isCash ? undefined : symbol.toUpperCase().trim(),
-          quantity: isCash ? undefined : parseFloat(quantity),
+          symbol: (isCash || isFee) ? undefined : symbol.toUpperCase().trim(),
+          quantity: (isCash || isFee) ? undefined : parseFloat(quantity),
           price_per_share: parseFloat(price),
-          brokerage_fee: isCash ? 0 : parseFloat(fee || '0'),
+          brokerage_fee: 0,
+          regulatory_fee: isFee ? parseFloat(price) : 0,
           executed_at: execDate.toISOString(),
-          notes: notes || undefined,
+          notes: finalNotes,
         });
       }
+      
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -115,7 +135,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       title={editingTransaction ? `Edit ${editingTransaction.transaction_type.replace('_', ' ')}` : 'Record New Transaction'}
     >
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+        <div className="p-3 mb-4 text-xs border rounded-lg bg-rose-50 border-rose-200 text-rose-700">
           {error}
         </div>
       )}
@@ -129,7 +149,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             value={selectedPortfolioId}
             disabled={!!editingTransaction}
             onChange={(e) => setSelectedPortfolioId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold bg-white focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100 cursor-pointer"
+            className="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100"
           >
             {(isDividend ? portfolios : availablePortfolios).map((p) => (
               <option key={p.id} value={p.id}>
@@ -142,8 +162,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         {!editingTransaction && (
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase">Type</label>
-            <div className="grid grid-cols-4 gap-1.5 bg-gray-100 p-1 rounded-lg">
-              {(['BUY', 'SELL', 'CASH_DEPOSIT', 'CASH_WITHDRAWAL'] as const).map((t) => (
+                        <div className="grid grid-cols-5 gap-1.5 bg-gray-100 p-1 rounded-lg">
+              {(['BUY', 'SELL', 'CASH_DEPOSIT', 'CASH_WITHDRAWAL', 'FEE'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
@@ -152,11 +172,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     type === t
                       ? t === 'BUY' || t === 'CASH_DEPOSIT'
                         ? 'bg-emerald-600 text-white shadow-xs'
+                        : t === 'FEE'
+                        ? 'bg-amber-600 text-white shadow-xs'
                         : 'bg-rose-600 text-white shadow-xs'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  {t.replace('_', ' ')}
+                  {t === 'FEE' ? 'DEDUCTION' : t.replace('_', ' ')}
                 </button>
               ))}
             </div>
@@ -171,41 +193,71 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           required
         />
 
-        {!isCash && (
-          <Input
-            label="PSX Symbol"
-            placeholder="e.g. ENGRO, SYS, FFC, OGDC, DCR"
-            value={symbol}
-            disabled={!!editingTransaction && isDividend}
-            onChange={(e) => setSymbol(e.target.value)}
-            required
-          />
+        {/* Deduction Type (Only shown when Deduction/FEE is selected) */}
+        {isFee && (
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase">
+              Deduction Type
+            </label>
+            <select
+              value={deductionReason}
+              onChange={(e) => setDeductionReason(e.target.value)}
+              className="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-amber-500"
+            >
+              {DEDUCTION_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
         )}
 
-        {!isCash && (
-          <Input
-            label={isDividend ? "Eligible Shares" : "Quantity (Shares)"}
-            type="number"
-            min="1"
-            step="1"
-            placeholder="e.g. 500"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            required
-          />
+        {/* Symbol & Quantity (Hidden for Cash and Deductions) */}
+        {!isCash && !isFee && (
+          <>
+            <Input
+              label="PSX Symbol"
+              placeholder="e.g. ENGRO, SYS, FFC, OGDC, DCR"
+              value={symbol}
+              disabled={!!editingTransaction && isDividend}
+              onChange={(e) => setSymbol(e.target.value)}
+              required
+            />
+            <Input
+              label={isDividend ? "Eligible Shares" : "Quantity (Shares)"}
+              type="number"
+              min="1"
+              step="1"
+              placeholder="e.g. 500"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              required
+            />
+          </>
         )}
 
+        {/* Amount Input */}
         <Input
-          label={isCash ? 'Amount (PKR)' : isDividend ? 'Dividend Per Share (DPS in PKR)' : 'Price per Share (PKR)'}
+          label={
+            isFee
+              ? 'Deduction Amount (PKR)'
+              : isCash
+              ? 'Amount (PKR)'
+              : isDividend
+              ? 'Dividend Per Share (DPS in PKR)'
+              : 'Price per Share (PKR)'
+          }
           type="number"
           step="0.01"
-          placeholder="e.g. 550.00"
+          placeholder="e.g. 300.00"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required
         />
 
-        {!isCash && (
+        {/* Brokerage / Taxes (Hidden for Cash and Deductions) */}
+        {!isCash && !isFee && (
           <Input
             label={isDividend ? "Tax & Zakat Deductions (PKR)" : "Brokerage & Regulatory Fees (PKR)"}
             type="number"
@@ -218,14 +270,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
         <Input
           label="Notes (Optional)"
-          placeholder="e.g. Order reference or execution note"
+          placeholder={isFee ? "e.g. Account maintenance or reference" : "e.g. Order reference or execution note"}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
 
         <div className="pt-2">
           <Button type="submit" className="w-full" isLoading={isLoading}>
-            {editingTransaction ? 'Save Changes' : `Confirm ${type.replace('_', ' ')}`}
+            {editingTransaction ? 'Save Changes' : isFee ? 'Confirm Deduction' : `Confirm ${type.replace('_', ' ')}`}
           </Button>
         </div>
       </form>
