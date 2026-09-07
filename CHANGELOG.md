@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 15: Excel / CSV Transaction Ledger Import**
+  - Direct import of transaction history dumps (.csv / Excel compatible) into specific broker or CDC accounts with automatic cross-application synchronization.
+  - Strict multi-layered validation: header structure verification, data type normalization, chronological sorting, and sequential FIFO share inventory simulation to prevent negative share states.
+  - Comprehensive line-by-line error reporting with row numbers and specific field violations on rejection.
+  - Interactive `ImportTransactionsModal` with drag-and-drop, sample CSV template download, and live in-browser parsing preview.
+  - Dedicated README guidelines outlining exact column layouts, date parsing formats, allowable transaction types, and safety rules.
 - **Phase 14: Account Deductions & Fee Recording**
   - Added support for recording account-level fee deductions (such as UIN FEES, CGT Debit, Custody Charges, SST FEES, CDC Transaction Fee, Stamp Paper Fee, KYC FEES, SMS Charges) directly impacting cash deposit balances of Broker and CDC accounts.
   - Updated `PortfolioReplayer` and `Transaction.net_amount` to handle fee accounting seamlessly without altering share holdings or tax lots.

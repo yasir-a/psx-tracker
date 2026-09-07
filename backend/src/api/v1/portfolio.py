@@ -11,6 +11,7 @@ from src.api.errors import ValidationError
 from src.application.services.portfolio_accounting_service import PortfolioAccountingService
 from src.domain.accounting.transaction_type import TransactionType
 from src.infrastructure.db.session import get_db_session
+from src.application.services.transaction_import_service import TransactionImportService
 
 portfolio_bp = Blueprint("portfolio", __name__, url_prefix="/portfolio")
 
@@ -191,3 +192,35 @@ def transfer_shares() -> tuple[Response, int]:
     session = get_db_session()
     session.commit()
     return jsonify(res), 200
+
+@portfolio_bp.route("/<string:portfolio_id>/transactions/import", methods=["POST"])
+@jwt_required
+def import_transactions(portfolio_id: str) -> tuple[Response, int]:
+    """Bulk import transaction ledger CSV dump into a specific account."""
+    pid = UUID(portfolio_id)
+    service = _get_service()
+    service.verify_ownership(pid, g.current_user_id)
+
+    csv_content = ""
+    if "file" in request.files:
+        file = request.files["file"]
+        if not file or file.filename == "":
+            raise ValidationError("No file selected for upload")
+        csv_content = file.read().decode("utf-8-sig", errors="replace")
+    elif request.is_json:
+        data = request.get_json(silent=True) or {}
+        csv_content = data.get("csv_data", "")
+    else:
+        csv_content = request.get_data(as_text=True)
+
+    if not csv_content.strip():
+        raise ValidationError("No CSV content provided")
+
+    session = get_db_session()
+    import_service = TransactionImportService(
+        portfolio_repo=service._portfolio_repo,
+        transaction_repo=service._tx_repo,
+    )
+    result = import_service.import_from_csv(pid, csv_content)
+    session.commit()
+    return jsonify(result), 201

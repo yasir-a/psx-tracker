@@ -138,7 +138,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 14 — Operational (Account Deductions & Fee Recording)**
+* **Current Phase:** **Phase 15 — Operational (Excel / CSV Transaction Ledger Import)**
 * **Status:** Complete production-grade PSX Portfolio Tracker:
   - Ledger-grade FIFO lot accounting & multi-account broker management (*Darson*, *BMA*, *CDC IAS*, inter-account share transfers, and consolidated views).
   - Corporate Actions engine (15% Filer / 30% Non-Filer WHT, Zakat deductions, Bonus shares, Rights, Splits with record-date aware validation).
@@ -148,5 +148,7 @@ psx-tracker/
   - **Phase 12 Market Terminal**: Interactive full-featured financial terminal for PSX stocks with **Live**, **Fundamentals**, **Technicals**, **Announcements**, **Profile**, and **Competitors**.
   - **Phase 13 Admin Management**: Server-side role-based authorization (`@admin_required`), CLI setup script (`backend/scripts/setup_admin.py`), user directory dashboard, Argon2id password reset, and cascading hard-deletion.
   - **Phase 14 Account Deductions**: Predefined deduction recording (UIN Fees, CGT Debit, Custody, SST, CDC, Stamp Paper, KYC, SMS Charges) deducting directly from broker/CDC cash balance.
-  - 100% automated test suite passing (39 tests) with clean TypeScript Vite frontend builds.
+  - **Phase 15 Excel / CSV Import**: Direct transaction history dump import into broker accounts with strict schema checks, FIFO simulation, chronological sorting, and live UI preview.
+  - 100% automated test suite passing (41 tests) with clean TypeScript Vite frontend builds.
+
 

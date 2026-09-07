@@ -2,13 +2,19 @@ import React, { useState } from 'react';
 import { TransactionRecord } from '../../../types/portfolio';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
-import { PlusCircle, Trash2, Edit2, Download } from 'lucide-react';
+import { PlusCircle, Trash2, Edit2, Download, Upload  } from 'lucide-react';
+import { ImportTransactionsModal } from './ImportTransactionsModal';
+import { PortfolioListItem } from '../../../services/portfolioService';
 
 interface TransactionsViewProps {
   transactions: TransactionRecord[];
+  portfolios?: PortfolioListItem[];
+  activePortfolioId?: string;
   onOpenTrade: () => void;
   onEditTransaction?: (tx: TransactionRecord) => void;
   onDeleteTransaction?: (portfolioId: string, transactionId: string) => void;
+  onRefresh?: () => void;
+
 }
 
 const getAccountBadgeClass = (name?: string) => {
@@ -43,11 +49,15 @@ const getTypeBadgeClass = (type: string) => {
 
 export const TransactionsView: React.FC<TransactionsViewProps> = ({
   transactions,
+  portfolios = [],
+  activePortfolioId = 'consolidated',
   onOpenTrade,
   onEditTransaction,
   onDeleteTransaction,
+  onRefresh,
 }) => {
   const [filterType, setFilterType] = useState<string>('ALL');
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const filtered = transactions.filter((t) => {
     if (filterType === 'ALL') return true;
@@ -60,7 +70,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
     const rows = filtered.map((t) => {
       const sym = t.transaction_type === 'CASH_DEPOSIT' || t.transaction_type === 'CASH_WITHDRAWAL' ? 'CASH' : t.symbol || '';
       return [
-        `"${new Date(t.executed_at).toLocaleDateString()}"`,
+        `"${t.executed_at.split('T')[0]}"`,
         `"${t.portfolio_name || 'Account'}"`,
         `"${t.transaction_type}"`,
         `"${sym}"`,
@@ -91,6 +101,10 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
           <p className="text-xs text-gray-500 mt-0.5">Audit trail of all portfolio and transfer events</p>
         </div>
         <div className="flex items-center gap-2.5">
+          <Button variant="secondary" size="sm" onClick={() => setIsImportOpen(true)}>
+            <Upload className="w-4 h-4 mr-1.5 text-gray-600" />
+            Import Excel / CSV
+          </Button>
           <Button variant="secondary" size="sm" onClick={exportToExcel} disabled={filtered.length === 0}>
             <Download className="w-4 h-4 mr-1.5 text-gray-600" />
             Export to Excel
@@ -216,6 +230,17 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
           </div>
         )}
       </Card>
+            {isImportOpen && (
+        <ImportTransactionsModal
+          isOpen={isImportOpen}
+          onClose={() => setIsImportOpen(false)}
+          portfolios={portfolios || []}
+          activePortfolioId={activePortfolioId || 'consolidated'}
+          onSuccess={() => {
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -127,6 +127,20 @@ export const portfolioService = {
     return res.data;
   },
   
+  async importTransactions(
+    portfolioId: string,
+    file: File
+  ): Promise<{ imported_count: number; new_cash_balance: number }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post<{ imported_count: number; new_cash_balance: number }>(
+      `/portfolio/${portfolioId}/transactions/import`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return res.data;
+  },
+
   async getTaxReport(portfolioId: string, taxYear?: number): Promise<any> {
     const res = await apiClient.get(`/corporate-actions/tax-report/${portfolioId}`, {
       params: { tax_year: taxYear },
