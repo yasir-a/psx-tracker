@@ -48,5 +48,6 @@ class Transaction:
         elif self.transaction_type == TransactionType.DIVIDEND_CASH:
             return self.gross_amount - self.total_fees
         elif self.transaction_type == TransactionType.FEE:
-            return -self.total_fees
+            fee_val = self.total_fees if self.total_fees.amount > Decimal("0") else self.price_per_share
+            return -fee_val
         return Money.zero(self.price_per_share.currency)

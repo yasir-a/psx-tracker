@@ -34,6 +34,8 @@ const getTypeBadgeClass = (type: string) => {
       return 'bg-teal-50 text-teal-700 border-teal-200';
     case 'TRANSFER_OUT':
       return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'FEE':
+      return 'bg-amber-50 text-amber-800 border-amber-300';
     default:
       return 'bg-gray-50 text-gray-700 border-gray-200';
   }
@@ -102,8 +104,8 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
 
       <Card>
         {/* Filter Pills */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-          {['ALL', 'BUY', 'SELL', 'DIVIDEND_CASH', 'TRANSFER_OUT', 'TRANSFER_IN', 'CASH_DEPOSIT'].map((t) => (
+        <div className="flex gap-2 pb-1 mb-4 overflow-x-auto">
+          {['ALL', 'BUY', 'SELL', 'DIVIDEND_CASH', 'TRANSFER_OUT', 'TRANSFER_IN', 'CASH_DEPOSIT', 'FEE'].map((t) => (
             <button
               key={t}
               onClick={() => setFilterType(t)}
@@ -119,11 +121,11 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 text-sm">No transactions found.</div>
+          <div className="py-10 text-sm text-center text-gray-500">No transactions found.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+            <table className="w-full text-sm text-left whitespace-nowrap">
+              <thead className="text-xs font-semibold tracking-wider text-gray-500 uppercase bg-gray-50">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Account</th>
@@ -139,7 +141,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filtered.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
+                  <tr key={t.id} className="transition-colors hover:bg-gray-50/60">
                     <td className="px-4 py-3.5 text-xs text-gray-500">
                       {new Date(t.executed_at).toLocaleDateString()}
                     </td>
@@ -161,10 +163,14 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                         {t.transaction_type.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 font-bold text-gray-900">
-                      {t.transaction_type === 'CASH_DEPOSIT' || t.transaction_type === 'CASH_WITHDRAWAL'
-                        ? 'CASH'
-                        : t.symbol || '—'}
+                    <td className="px-4 py-3.5 text-xs font-semibold text-gray-900">
+                      {t.transaction_type === 'CASH_DEPOSIT' || t.transaction_type === 'CASH_WITHDRAWAL' ? (
+                        <span className="font-medium tracking-wide text-gray-500">CASH</span>
+                      ) : t.transaction_type === 'FEE' ? (
+                        <span className="font-medium tracking-wide text-amber-700">DEDUCTION</span>
+                      ) : (
+                        <span className="font-bold tracking-tight text-gray-900">{t.symbol || '—'}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3.5 text-gray-700">
                       {t.quantity > 0 ? t.quantity.toLocaleString() : '—'}

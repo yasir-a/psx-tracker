@@ -45,15 +45,84 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
         return PgSecurityRepository(session)
 
     def get_security_metadata(self, symbol: str) -> Security | None:
+        sym = symbol.upper().strip()
         repo = self._get_repo()
-        sec = repo.get_by_symbol(symbol)
+        sec = repo.get_by_symbol(sym)
         if sec:
             return sec
-        return Security(
-            symbol=symbol.upper().strip(),
-            name=f"{symbol.upper().strip()} Limited",
-            sector=SecuritySector.COMMERCIAL_BANKS.value,
+
+        # Canonical PSX sector lookup dictionary
+        PSX_SECTOR_MAP: dict[str, tuple[str, str]] = {
+            "EFERT": ("Engro Fertilizers Limited", "Fertilizer"),
+            "ENGRO": ("Engro Corporation Limited", "Fertilizer"),
+            "FFC": ("Fauji Fertilizer Company Limited", "Fertilizer"),
+            "FATIMA": ("Fatima Fertilizer Company Limited", "Fertilizer"),
+            "SYS": ("Systems Limited", "Technology & Communication"),
+            "TRG": ("TRG Pakistan Limited", "Technology & Communication"),
+            "AIRLINK": ("Air Link Communication Limited", "Technology & Communication"),
+            "AVN": ("Avanceon Limited", "Technology & Communication"),
+            "OGDC": ("Oil & Gas Development Company Limited", "Oil & Gas Exploration Companies"),
+            "PPL": ("Pakistan Petroleum Limited", "Oil & Gas Exploration Companies"),
+            "MARI": ("Mari Petroleum Company Limited", "Oil & Gas Exploration Companies"),
+            "POL": ("Pakistan Oilfields Limited", "Oil & Gas Exploration Companies"),
+            "PSO": ("Pakistan State Oil Company Limited", "Oil & Gas Marketing Companies"),
+            "SHEL": ("Shell Pakistan Limited", "Oil & Gas Marketing Companies"),
+            "MEBL": ("Meezan Bank Limited", "Commercial Banks"),
+            "MCB": ("MCB Bank Limited", "Commercial Banks"),
+            "HBL": ("Habib Bank Limited", "Commercial Banks"),
+            "UBL": ("United Bank Limited", "Commercial Banks"),
+            "BAFL": ("Bank Alfalah Limited", "Commercial Banks"),
+            "BAHL": ("Bank AL Habib Limited", "Commercial Banks"),
+            "LUCK": ("Lucky Cement Limited", "Cement"),
+            "DGKC": ("D.G. Khan Cement Company Limited", "Cement"),
+            "MLCF": ("Maple Leaf Cement Factory Limited", "Cement"),
+            "FCCL": ("Fauji Cement Company Limited", "Cement"),
+            "HUBC": ("Hub Power Company Limited", "Power Generation & Distribution"),
+            "KAPCO": ("Kot Addu Power Company Limited", "Power Generation & Distribution"),
+            "KEL": ("K-Electric Limited", "Power Generation & Distribution"),
+            "ILP": ("Interloop Limited", "Textile Composite"),
+            "NML": ("Nishat Mills Limited", "Textile Composite"),
+            "ATRL": ("Attock Refinery Limited", "Refinery"),
+            "PRL": ("Pakistan Refinery Limited", "Refinery"),
+            "NRL": ("National Refinery Limited", "Refinery"),
+            "SEARL": ("The Searle Company Limited", "Pharmaceuticals"),
+            "AGP": ("AGP Limited", "Pharmaceuticals"),
+            "GLAXO": ("GlaxoSmithKline Pakistan Limited", "Pharmaceuticals"),
+            "LOTCHEM": ("Lotte Chemical Pakistan Limited", "Chemical"),
+            "EPCL": ("Engro Polymer & Chemicals Limited", "Chemical"),
+            "NATF": ("National Foods Limited", "Food & Personal Care Products"),
+            "NESTLE": ("Nestle Pakistan Limited", "Food & Personal Care Products"),
+            "INDU": ("Indus Motor Company Limited", "Automobile Assembler"),
+            "MTL": ("Millat Tractors Limited", "Automobile Assembler"),
+            "PSMC": ("Pak Suzuki Motor Company Limited", "Automobile Assembler"),
+            "UNITY": ("Unity Foods Limited", "Food & Personal Care Products"),
+            "DCR": ("Dolmen City REIT", "Real Estate Investment Trust"),
+        }
+
+        sec = repo.get_by_symbol(sym)
+        # If security already exists with a valid non-Miscellaneous sector, return it
+        if sec and sec.sector and sec.sector != "Miscellaneous":
+            return sec
+
+        if sym in PSX_SECTOR_MAP:
+            name, sector = PSX_SECTOR_MAP[sym]
+            new_sec = Security(symbol=sym, name=name, sector=sector)
+            repo.save(new_sec)
+            get_db_session().commit()
+            return new_sec
+        
+        if sec:
+            return sec
+
+        # Default fallback
+        new_sec = Security(
+            symbol=sym,
+            name=f"{sym} Limited",
+            sector=SecuritySector.MISCELLANEOUS.value,
         )
+        repo.save(new_sec)
+        get_db_session().commit()
+        return new_sec
 
     def list_all_securities(self) -> list[Security]:
         repo = self._get_repo()

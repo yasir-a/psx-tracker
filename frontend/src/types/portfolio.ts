@@ -11,6 +11,8 @@ export interface TaxLot {
 
 export interface Holding {
   symbol: string;
+  name?: string;
+  sector?: string;
   quantity: number;
   cost_per_share: number;
   total_cost_basis: number;

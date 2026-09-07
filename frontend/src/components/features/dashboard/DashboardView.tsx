@@ -34,17 +34,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* KPI Cards Grid - 5 Distinct Columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Total Portfolio Value"
           value={`PKR ${summary.total_portfolio_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          subValue={`${summary.unrealized_return_pct >= 0 ? '+' : ''}${summary.unrealized_return_pct}% Return`}
+          subValue={`${summary.unrealized_return_pct >= 0 ? '+' : ''}${summary.unrealized_return_pct.toFixed(2)}% Return`}
           isPositive={summary.unrealized_return_pct >= 0}
         />
         <StatCard
           label="Unrealized P&L"
           value={`PKR ${summary.unrealized_gain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          subValue={`${summary.unrealized_return_pct >= 0 ? '+' : ''}${summary.unrealized_return_pct}% on active lots`}
+          subValue={`${summary.unrealized_return_pct >= 0 ? '+' : ''}${summary.unrealized_return_pct.toFixed(2)}% on active lots`}
           isPositive={summary.unrealized_gain >= 0}
         />
         <StatCard
@@ -70,7 +70,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Holdings Overview Table */}
       <Card title="Current Holdings" subtitle={`${holdings.length} active positions in Pakistan Stock Exchange`}>
         {holdings.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
+          <div className="py-10 text-center text-gray-500">
             <p className="text-sm">No active holdings recorded yet.</p>
             <Button variant="primary" size="sm" className="mt-3" onClick={onOpenTrade}>
               Execute Your First Trade
@@ -78,8 +78,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs font-semibold text-gray-500 uppercase bg-gray-50">
                 <tr>
                   <th className="px-4 py-3">Symbol</th>
                   <th className="px-4 py-3">Shares</th>
@@ -93,7 +93,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {holdings.map((h) => {
                   const isUp = h.unrealized_gain >= 0;
                   return (
-                    <tr key={h.symbol} className="hover:bg-gray-50/80 transition-colors">
+                    <tr key={h.symbol} className="transition-colors hover:bg-gray-50/80">
                       <td className="px-4 py-3.5 font-bold text-gray-900">{h.symbol}</td>
                       <td className="px-4 py-3.5 text-gray-700">{h.quantity.toLocaleString()}</td>
                       <td className="px-4 py-3.5 text-gray-700">PKR {h.cost_per_share.toFixed(2)}</td>
@@ -101,7 +101,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <td className="px-4 py-3.5 font-semibold text-gray-900">PKR {h.market_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3.5">
                         <Badge variant={isUp ? 'green' : 'red'}>
-                          {isUp ? '+' : ''}{h.unrealized_return_pct}% (PKR {h.unrealized_gain.toLocaleString()})
+                          {isUp ? '+' : ''}{h.unrealized_return_pct.toFixed(2)}% (PKR {h.unrealized_gain.toLocaleString()})
                         </Badge>
                       </td>
                     </tr>

@@ -71,8 +71,9 @@ class PortfolioReplayer:
                 total_dividends = total_dividends + (tx.gross_amount - tx.total_fees)
                 total_fees = total_fees + tx.total_fees
             elif tx.transaction_type == TransactionType.FEE:
-                cash = cash - tx.total_fees
-                total_fees = total_fees + tx.total_fees
+                fee_val = tx.total_fees if tx.total_fees.amount > Decimal("0") else tx.price_per_share
+                cash = cash - fee_val
+                total_fees = total_fees + fee_val
             elif tx.transaction_type in (
                 TransactionType.BUY,
                 TransactionType.BONUS_SHARES,
