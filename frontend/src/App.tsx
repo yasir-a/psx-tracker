@@ -226,12 +226,18 @@ const MainApp: React.FC = () => {
             {activeTab === 'transactions' && (
               <TransactionsView
                 transactions={transactions}
+                portfolios={portfolios}
+                activePortfolioId={activePortfolioId}
                 onOpenTrade={() => {
                   setEditingTx(null);
                   setIsTradeModalOpen(true);
                 }}
                 onEditTransaction={handleEditTransaction}
                 onDeleteTransaction={handleDeleteTransaction}
+                onRefresh={() => {
+                  fetchPortfolios();
+                  refreshValuation(activePortfolioId);
+                }}
               />
             )}
 

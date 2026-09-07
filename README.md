@@ -130,6 +130,44 @@ npm run dev
 
 ---
 
+---
+
+## Importing Transaction Dumps (Excel / CSV Guidelines)
+
+The application supports importing historical transaction ledgers directly into any Broker or CDC account via `.csv` dumps (compatible with Excel).
+
+### 1. Column Structure & Specifications
+
+The file should include a header row matching the standard export columns (case-insensitive, order-agnostic):
+
+| Column Name | Required | Example | Description & Constraints |
+| :--- | :--- | :--- | :--- |
+| `Date` | **Yes** | `2026-01-15` or `15/01/2026` | Date of execution. Supports ISO `YYYY-MM-DD`, `DD/MM/YYYY`, and `MM/DD/YYYY`. Must not be in the future. |
+| `Type` | **Yes** | `BUY` | Transaction type: `BUY`, `SELL`, `CASH_DEPOSIT`, `CASH_WITHDRAWAL`, `DIVIDEND_CASH`, `BONUS_SHARES`, `RIGHT_SHARES`, `FEE` (or `DEDUCTION`). |
+| `Symbol` | Conditional | `SYS` | Required for `BUY`, `SELL`, `BONUS_SHARES`, `RIGHT_SHARES`. Leave blank for cash/fee events. |
+| `Quantity` | Conditional | `500` | Number of shares. Must be a positive integer for share trades. |
+| `Price per Share (PKR)` | Conditional | `420.50` | Execution price per share for trades, or Dividend Per Share (DPS), or Deposit/Withdrawal/Fee amount. |
+| `Fees (PKR)` | No | `125.00` | Total brokerage commission + regulatory taxes. Defaults to `0.00`. |
+| `Notes` | No | `Initial buy order` | Optional reference note or description. |
+
+### 2. CSV Template Example
+
+```csv
+Date,Type,Symbol,Quantity,Price per Share (PKR),Fees (PKR),Notes
+2026-01-01,CASH_DEPOSIT,,0,500000.00,0,Initial capital deposit
+2026-01-05,BUY,SYS,1000,420.00,420.00,Brokerage trade confirmation #1024
+2026-01-10,FEE,,0,300.00,0,[UIN FEES] Account maintenance
+2026-02-01,SELL,SYS,300,460.00,150.00,Partial profit taking
+```
+
+### 3. Validation & Accounting Safety Rules
+
+- **Chronological Sorting**: Rows in the file are sorted chronologically by `Date` before processing.
+- **FIFO Inventory Validation**: A sequential simulation verifies that no `SELL` transaction sells more shares than were available in the account at that date.
+- **Atomic Execution**: Imports are strictly atomic. If any row fails validation, the entire batch is rejected with line numbers and reasons, preventing corrupt or partial state.
+
+---
+
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

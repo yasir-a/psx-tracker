@@ -138,3 +138,10 @@ Status definitions:
 | :--- | :--- | :--- | :--- | :--- |
 | `TX-005` | Account Fee & Deduction Recording | **Completed** | `ACC-001` | Record 8 predefined deduction types (UIN Fees, CGT Debit, Custody, SST, CDC, Stamp Paper, KYC, SMS) deducting directly from broker/CDC cash balance. |
 
+## Phase 15: Excel / CSV Transaction Ledger Import
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `TX-006` | Excel / CSV Ledger Dump Import | **Completed** | `TX-005` | Direct import of transaction history dumps into specific broker accounts with schema checks, FIFO inventory simulation, line-by-line validation, and atomic commit. |
+
+
