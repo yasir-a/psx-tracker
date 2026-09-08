@@ -26,8 +26,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     activePortfolioId === 'consolidated' ? (portfolios[0]?.id || '') : activePortfolioId
   );
   
-    const [type, setType] = useState<'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'DIVIDEND_CASH' | 'FEE'>('BUY');
+  const [type, setType] = useState<'BUY' | 'SELL' | 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'DIVIDEND_CASH' | 'FEE'>('BUY');
   const [deductionReason, setDeductionReason] = useState<string>('UIN FEES');
+  const [depositType, setDepositType] = useState<string>('REGULAR');
   const [symbol, setSymbol] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
@@ -39,7 +40,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const DEDUCTION_CATEGORIES = [
     'UIN FEES',
-    'CGT Debit',
+    'CGT DEBIT',
     'Custody Charges',
     'SST FEES',
     'CDC Transaction Fee',
@@ -94,16 +95,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     try {
       const execDate = new Date(executedAt);
       execDate.setHours(10, 0, 0, 0);
-      const finalNotes = isFee
-        ? (notes ? `[${deductionReason}] ${notes}` : `[${deductionReason}] Account deduction`)
-        : (notes || undefined);
+      let finalNotes = notes || undefined;
+      if (isFee) {
+        finalNotes = notes ? `[${deductionReason}] ${notes}` : `[${deductionReason}] Account deduction`;
+      } else if (type === 'CASH_DEPOSIT' && depositType === 'CGT_CREDIT') {
+        finalNotes = notes ? `[CGT Credit] ${notes}` : `[CGT Credit] NCCPL tax credit/refund`;
+      }
 
       if (editingTransaction) {
+        const feeVal = parseFloat(fee || '0');
         await portfolioService.updateTransaction(selectedPortfolioId, editingTransaction.id, {
           symbol: (isCash || isFee) ? undefined : symbol.toUpperCase().trim(),
           quantity: (isCash || isFee) ? undefined : parseFloat(quantity),
           price_per_share: parseFloat(price),
-          brokerage_fee: (isCash || isFee) ? 0 : parseFloat(fee || '0'),
+          brokerage_fee: (isCash || isFee) ? 0 : feeVal,
+          regulatory_fee: isFee ? parseFloat(price) : 0,
+          executed_at: execDate.toISOString(),
           notes: finalNotes,
         });
       } else {
@@ -162,7 +169,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         {!editingTransaction && (
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase">Type</label>
-                        <div className="grid grid-cols-5 gap-1.5 bg-gray-100 p-1 rounded-lg">
+              <div className="grid grid-cols-5 gap-1.5 bg-gray-100 p-1 rounded-lg">
               {(['BUY', 'SELL', 'CASH_DEPOSIT', 'CASH_WITHDRAWAL', 'FEE'] as const).map((t) => (
                 <button
                   key={t}
@@ -192,7 +199,37 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           onChange={(e) => setExecutedAt(e.target.value)}
           required
         />
-
+        {type === 'CASH_DEPOSIT' && (
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5 uppercase">
+              Deposit Type
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setDepositType('REGULAR')}
+                className={`py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                  depositType === 'REGULAR'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                Regular Deposit
+              </button>
+              <button
+                type="button"
+                onClick={() => setDepositType('CGT_CREDIT')}
+                className={`py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                  depositType === 'CGT_CREDIT'
+                    ? 'bg-teal-50 text-teal-800 border-teal-300 font-semibold'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                CGT Credit (NCCPL)
+              </button>
+            </div>
+          </div>
+        )}
         {/* Deduction Type (Only shown when Deduction/FEE is selected) */}
         {isFee && (
           <div>

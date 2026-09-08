@@ -139,6 +139,13 @@ def update_transaction(portfolio_id: str, transaction_id: str) -> tuple[Response
     txid = UUID(transaction_id)
     data = request.get_json(silent=True) or {}
 
+    exec_at = None
+    if data.get("executed_at"):
+        try:
+            exec_at = datetime.fromisoformat(data["executed_at"].replace("Z", "+00:00"))
+        except Exception:
+            exec_at = None
+
     service = _get_service()
     updated = service.update_transaction(
         portfolio_id=pid,
@@ -148,6 +155,8 @@ def update_transaction(portfolio_id: str, transaction_id: str) -> tuple[Response
         quantity=Decimal(str(data.get("quantity", 0))),
         price_per_share=Decimal(str(data.get("price_per_share", 0))),
         brokerage_fee=Decimal(str(data.get("brokerage_fee", 0))),
+        regulatory_fee=Decimal(str(data.get("regulatory_fee", 0))),
+        executed_at=exec_at,
         notes=data.get("notes"),
     )
     session = get_db_session()
@@ -179,6 +188,13 @@ def transfer_shares() -> tuple[Response, int]:
     if not from_pid or not to_pid or not symbol or not quantity:
         raise ValidationError("Missing required fields: from_portfolio_id, to_portfolio_id, symbol, quantity")
 
+    exec_at = None
+    if data.get("executed_at"):
+        try:
+            exec_at = datetime.fromisoformat(data["executed_at"].replace("Z", "+00:00"))
+        except Exception:
+            exec_at = None
+
     service = _get_service()
     res = service.transfer_shares_between_portfolios(
         user_id=g.current_user_id,
@@ -187,6 +203,7 @@ def transfer_shares() -> tuple[Response, int]:
         symbol=symbol,
         quantity=Decimal(str(quantity)),
         cdc_transfer_fee=Decimal(str(data.get("cdc_transfer_fee", 0))),
+        executed_at=exec_at,
         notes=data.get("notes"),
     )
     session = get_db_session()

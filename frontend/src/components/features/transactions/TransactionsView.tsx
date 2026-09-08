@@ -47,6 +47,19 @@ const getTypeBadgeClass = (type: string) => {
   }
 };
 
+const getDeductionDetails = (notes?: string | null, defaultCategory: string = 'DEDUCTION') => {
+  if (!notes) return { category: defaultCategory, cleanNote: '—' };
+  const match = notes.match(/^\[(.*?)\]\s*(.*)$/);
+  if (match) {
+    return {
+      category: match[1].trim(),
+      cleanNote: match[2].trim() || '—',
+    };
+  }
+  return { category: defaultCategory, cleanNote: notes };
+};
+
+
 export const TransactionsView: React.FC<TransactionsViewProps> = ({
   transactions,
   portfolios = [],
@@ -68,7 +81,14 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
   const exportToExcel = () => {
     const headers = ['Date,Account,Type,Symbol,Quantity,Price per Share (PKR),Fees (PKR),Net Amount (PKR),Notes'];
     const rows = filtered.map((t) => {
-      const sym = t.transaction_type === 'CASH_DEPOSIT' || t.transaction_type === 'CASH_WITHDRAWAL' ? 'CASH' : t.symbol || '';
+    const sym =
+        t.transaction_type === 'CASH_DEPOSIT'
+          ? (t.notes || '').includes('[CGT Credit]') ? 'CGT CREDIT' : 'CASH'
+          : t.transaction_type === 'CASH_WITHDRAWAL'
+          ? 'CASH'
+          : t.transaction_type === 'FEE'
+          ? getDeductionDetails(t.notes).category
+          : t.symbol || '';
       return [
         `"${t.executed_at.split('T')[0]}"`,
         `"${t.portfolio_name || 'Account'}"`,
@@ -77,7 +97,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
         t.quantity || 0,
         t.price_per_share || 0,
         (t.brokerage_fee + t.regulatory_fee).toFixed(2),
-        Math.abs(t.net_amount).toFixed(2),
+        (Math.abs(t.net_amount) > 0 ? Math.abs(t.net_amount) : (t.quantity * t.price_per_share)).toFixed(2),
         `"${(t.notes || '').replace(/"/g, '""')}"`,
       ].join(',');
     });
@@ -178,10 +198,20 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                       </span>
                     </td>
                     <td className="px-4 py-3.5 text-xs font-semibold text-gray-900">
-                      {t.transaction_type === 'CASH_DEPOSIT' || t.transaction_type === 'CASH_WITHDRAWAL' ? (
+                      {t.transaction_type === 'CASH_DEPOSIT' ? (
+                        (t.notes || '').includes('[CGT Credit]') ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-300 whitespace-nowrap">
+                            CGT CREDIT
+                          </span>
+                        ) : (
+                          <span className="font-medium tracking-wide text-gray-500">CASH</span>
+                        )
+                      ) : t.transaction_type === 'CASH_WITHDRAWAL' ? (
                         <span className="font-medium tracking-wide text-gray-500">CASH</span>
                       ) : t.transaction_type === 'FEE' ? (
-                        <span className="font-medium tracking-wide text-amber-700">DEDUCTION</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap">
+                          {getDeductionDetails(t.notes).category}
+                        </span>
                       ) : (
                         <span className="font-bold tracking-tight text-gray-900">{t.symbol || '—'}</span>
                       )}
@@ -194,9 +224,20 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                       PKR {(t.brokerage_fee + t.regulatory_fee).toFixed(2)}
                     </td>
                     <td className="px-4 py-3.5 font-semibold text-gray-900">
+                      PKR {
+                        (Math.abs(t.net_amount) > 0
+                          ? Math.abs(t.net_amount)
+                          : (t.quantity * t.price_per_share)
+                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                      }
+                    </td><td className="px-4 py-3.5 font-semibold text-gray-900">
                       PKR {Math.abs(t.net_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="px-4 py-3.5 text-xs text-gray-400 max-w-[200px] truncate">{t.notes || '—'}</td>
+                    <td className="px-4 py-3.5 text-xs text-gray-500 max-w-[200px] truncate">
+                      {t.transaction_type === 'FEE' || (t.notes || '').includes('[CGT Credit]')
+                        ? getDeductionDetails(t.notes, 'CASH').cleanNote
+                        : (t.notes || '—')}
+                    </td>
                     <td className="px-4 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {onEditTransaction && (

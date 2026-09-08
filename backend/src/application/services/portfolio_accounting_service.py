@@ -108,6 +108,8 @@ class PortfolioAccountingService:
         quantity: Decimal = Decimal("0"),
         price_per_share: Decimal = Decimal("0"),
         brokerage_fee: Decimal = Decimal("0"),
+        regulatory_fee: Decimal = Decimal("0"),
+        executed_at: datetime | None = None,
         notes: str | None = None,
     ) -> dict[str, Any]:
         self.verify_ownership(portfolio_id, user_id)
@@ -124,12 +126,12 @@ class PortfolioAccountingService:
             quantity=Quantity(quantity) if quantity > 0 else existing_tx.quantity,
             price_per_share=Money(price_per_share, "PKR") if price_per_share > 0 else existing_tx.price_per_share,
             brokerage_fee=Money(brokerage_fee, "PKR"),
-            regulatory_fee=existing_tx.regulatory_fee,
-            executed_at=existing_tx.executed_at,
+            regulatory_fee=Money(regulatory_fee, "PKR"),
+            executed_at=executed_at or existing_tx.executed_at,
             notes=notes,
         )
-
         saved = self._tx_repo.save(updated_tx)
+        
         return {
             "id": str(saved.id),
             "transaction_type": saved.transaction_type.value,
@@ -239,6 +241,7 @@ class PortfolioAccountingService:
         symbol: str,
         quantity: Decimal,
         cdc_transfer_fee: Decimal = Decimal("0"),
+        executed_at: datetime | None = None,
         notes: str | None = None,
     ) -> dict[str, Any]:
         self.verify_ownership(from_portfolio_id, user_id)
@@ -258,7 +261,7 @@ class PortfolioAccountingService:
                 f"Insufficient shares of {sym} in source portfolio: available {avail}, requested {quantity}"
             )
 
-        now = datetime.now(timezone.utc)
+        transfer_time = executed_at or datetime.now(timezone.utc)
         effective_cost_per_share = holding.cost_per_share.amount
 
         from_portfolio = self._portfolio_repo.get_by_id(from_portfolio_id)
@@ -273,7 +276,7 @@ class PortfolioAccountingService:
             quantity=Quantity(quantity),
             price_per_share=Money(effective_cost_per_share, "PKR"),
             regulatory_fee=Money(cdc_transfer_fee, "PKR"),
-            executed_at=now,
+            executed_at=transfer_time,
             notes=notes or f"Transferred to {to_name}",
         )
         self._tx_repo.save(tx_out)
@@ -284,7 +287,7 @@ class PortfolioAccountingService:
             symbol=sym,
             quantity=Quantity(quantity),
             price_per_share=Money(effective_cost_per_share, "PKR"),
-            executed_at=now,
+            executed_at=transfer_time,
             notes=notes or f"Transferred from {from_name}",
         )
         self._tx_repo.save(tx_in)

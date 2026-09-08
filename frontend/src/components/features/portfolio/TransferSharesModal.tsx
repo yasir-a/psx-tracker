@@ -22,6 +22,7 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
   const [symbol, setSymbol] = useState('');
   const [quantity, setQuantity] = useState('');
   const [cdcFee, setCdcFee] = useState('0');
+  const [executedAt, setExecutedAt] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,12 +37,16 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
     setIsLoading(true);
 
     try {
+      const execDate = new Date(executedAt);
+      execDate.setHours(10, 0, 0, 0);
+      
       await portfolioService.transferShares({
         from_portfolio_id: fromPid,
         to_portfolio_id: toPid,
         symbol: symbol.toUpperCase().trim(),
         quantity: parseFloat(quantity),
         cdc_transfer_fee: parseFloat(cdcFee || '0'),
+        executed_at: execDate.toISOString(),
         notes: notes || undefined,
       });
       onSuccess();
@@ -56,7 +61,7 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Transfer Shares (Broker ⇄ CDC)">
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+        <div className="p-3 mb-4 text-xs border rounded-lg bg-rose-50 border-rose-200 text-rose-700">
           {error}
         </div>
       )}
@@ -64,11 +69,11 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">From Account</label>
+            <label className="block mb-1 text-xs font-semibold text-gray-700">From Account</label>
             <select
               value={fromPid}
               onChange={(e) => setFromPid(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-medium bg-white focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 text-xs font-medium bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
             >
               {portfolios.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -79,11 +84,11 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">To Account</label>
+            <label className="block mb-1 text-xs font-semibold text-gray-700">To Account</label>
             <select
               value={toPid}
               onChange={(e) => setToPid(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-medium bg-white focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 text-xs font-medium bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
             >
               {portfolios.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -93,6 +98,14 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
             </select>
           </div>
         </div>
+        
+        <Input
+          label="Transfer Date"
+          type="date"
+          value={executedAt}
+          onChange={(e) => setExecutedAt(e.target.value)}
+          required
+        />
 
         <Input
           label="Security Symbol"
