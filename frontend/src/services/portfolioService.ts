@@ -89,6 +89,7 @@ export const portfolioService = {
       price_per_share?: number;
       brokerage_fee?: number;
       regulatory_fee?: number;
+      executed_at?: string;
       notes?: string;
     }
   ): Promise<TransactionRecord> {
@@ -105,6 +106,7 @@ export const portfolioService = {
     symbol: string;
     quantity: number;
     cdc_transfer_fee?: number;
+    executed_at?: string;
     notes?: string;
   }): Promise<void> {
     await apiClient.post('/portfolio/transfer-shares', payload);

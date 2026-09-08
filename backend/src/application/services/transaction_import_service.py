@@ -191,9 +191,16 @@ class TransactionImportService:
 
         parsed_date = self._parse_date(date_str)
 
-        # Parse Type
+        notes = get_val("notes")
+
+        # Parse Type & Symbol
         raw_type = get_val("type").upper().replace(" ", "_")
-        if raw_type in ("DEDUCTION", "FEE", "CHARGES"):
+        raw_sym = get_val("symbol").upper()
+
+        if "CGT_CREDIT" in raw_type or "CGT_CREDIT" in raw_sym:
+            tx_type = TransactionType.CASH_DEPOSIT
+            notes = f"[CGT Credit] {notes}" if notes else "[CGT Credit] NCCPL tax credit/refund"
+        elif raw_type in ("DEDUCTION", "FEE", "CHARGES"):
             tx_type = TransactionType.FEE
         else:
             try:
@@ -201,9 +208,9 @@ class TransactionImportService:
             except ValueError:
                 raise ValidationError(f"Invalid transaction type: '{raw_type}'")
 
-        # Parse Symbol
-        symbol = get_val("symbol").upper()
-        if symbol in ("CASH", "—", "-"):
+        # Clean Symbol
+        symbol = raw_sym
+        if symbol in ("CASH", "—", "-", "CGT CREDIT", "CGT_CREDIT"):
             symbol = ""
 
         if tx_type in (
@@ -237,8 +244,6 @@ class TransactionImportService:
             fees = Decimal(raw_fees) if raw_fees else Decimal("0")
         except Exception:
             raise ValidationError(f"Invalid fees: '{raw_fees}'")
-
-        notes = get_val("notes")
 
         # For FEE transactions, map price or fees to regulatory_fee
         reg_fee = Decimal("0")
