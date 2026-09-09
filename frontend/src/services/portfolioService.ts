@@ -119,6 +119,7 @@ export const portfolioService = {
     tax_status: 'FILER' | 'NON_FILER' | 'CUSTOM';
     custom_tax_rate?: number;
     zakat_deducted?: number;
+    eligible_shares?: number;
     executed_at?: string;
   }): Promise<void> {
     await apiClient.post('/corporate-actions/dividend', payload);

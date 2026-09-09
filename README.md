@@ -21,7 +21,7 @@ Designed with ledger-grade financial accounting, full support for PSX-specific c
 * **Frontend**: React, Vite, TypeScript
 * **Backend**: Python, Flask (Modular Blueprints, clean Domain/Service/Repository layer)
 * **Database**: PostgreSQL (Authoritative persistent data store with migration strategy)
-* **Cache / Ephemeral Store**: Redis (Sessions, rate limiting, task coordination, caching)
+* **Cache / Ephemeral Store**: Pure Python In-Memory Cache (`InMemoryCache`) with zero external service overhead and PostgreSQL persistence
 
 ---
 
@@ -117,20 +117,25 @@ npm run dev
 
 ## Development Phases
 
-* **Phase 0: Repository & Governance** *(Completed)*
-* **Phase 1: Backend Foundation** *(Completed)*
-* **Phase 2: Database & Migrations** *(Completed)*
-* **Phase 3: Authentication & Users** *(Completed)*
-* **Phase 4: Portfolio Accounting Domain** *(Completed)*
-* **Phase 5: PSX Market Data** *(Completed)*
-* **Phase 6: Dividends & Corporate Actions** *(Completed)*
-* **Phase 7: Frontend Foundation** *(Completed)*
-* **Phase 8: Portfolio UI & Dashboard** *(Next)*
-* **Phase 9: Advanced Analytics & Reporting** *(Planned)*
+* **Phase 0: Repository & Governance Foundation** *(Completed)*
+* **Phase 1: Backend Foundation (Flask Blueprints & Error Handling)** *(Completed)*
+* **Phase 2: Database & Migrations (PostgreSQL & Alembic)** *(Completed)*
+* **Phase 3: Authentication & Security (Argon2id & JWT)** *(Completed)*
+* **Phase 4: Portfolio Accounting Domain (FIFO Engine & Money Math)** *(Completed)*
+* **Phase 5: PSX Market Data (Scrapers & Quote Persistence)** *(Completed)*
+* **Phase 6: Dividends & Corporate Actions (WHT Filer/Non-Filer, Bonus, Rights, Splits)** *(Completed)*
+* **Phase 7: Frontend Foundation (React, Vite, Tailwind CSS)** *(Completed)*
+* **Phase 8: Portfolio UI & Dashboard (Holdings, Consolidated & Broker Views)** *(Completed)*
+* **Phase 9: Advanced Analytics & Reporting (KSE-100 Benchmark, Alpha/Beta, CGT Schedules)** *(Completed)*
+* **Phase 10: Multi-Account Management (Darson, BMA, CDC IAS & Inter-Account Transfers)** *(Completed)*
+* **Phase 11: System Backups & Ledger Export (Automated SQL Dumps & Excel Export)** *(Completed)*
+* **Phase 12: Comprehensive PSX Market Terminal (Live, Fundamentals, Technicals, Filings)** *(Completed)*
+* **Phase 13: Admin User & Security Management (Role-Based Access Control, CLI Admin Setup)** *(Completed)*
+* **Phase 14: Account Deductions & NCCPL Credits (8 Predefined Fees & CGT Tax Adjustments)** *(Completed)*
+* **Phase 15: Excel / CSV Transaction Ledger Import & Ledger Enhancements** *(Completed)*
 
 ---
 
----
 
 ## Importing Transaction Dumps (Excel / CSV Guidelines)
 
