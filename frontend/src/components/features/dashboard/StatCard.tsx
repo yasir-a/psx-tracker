@@ -13,9 +13,9 @@ interface StatCardProps {
 
 export const StatCard: React.FC<StatCardProps> = ({ label, value, subValue, isPositive, isNeutral }) => {
   return (
-    <Card className="hover:border-gray-300 transition-colors">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</p>
-      <p className="text-2xl font-bold text-gray-900 mt-2">{value}</p>
+    <Card className="transition-colors hover:border-gray-300">
+      <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase">{label}</p>
+      <p className="mt-2 text-xl font-bold text-gray-900">{value}</p>
       {subValue && (
         <div className="flex items-center gap-1.5 mt-1.5">
           {!isNeutral && (

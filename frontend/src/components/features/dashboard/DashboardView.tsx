@@ -37,31 +37,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           label="Total Portfolio Value"
-          value={`PKR ${summary.total_portfolio_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`Rs. ${summary.total_portfolio_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           subValue={`${summary.unrealized_return_pct >= 0 ? '+' : ''}${summary.unrealized_return_pct.toFixed(2)}% Return`}
           isPositive={summary.unrealized_return_pct >= 0}
         />
         <StatCard
           label="Unrealized P&L"
-          value={`PKR ${summary.unrealized_gain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`Rs. ${summary.unrealized_gain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           subValue={`${summary.unrealized_return_pct >= 0 ? '+' : ''}${summary.unrealized_return_pct.toFixed(2)}% on active lots`}
           isPositive={summary.unrealized_gain >= 0}
         />
         <StatCard
           label="Realized Profit"
-          value={`PKR ${summary.realized_gain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          subValue={`Fees: PKR ${summary.total_fees_paid.toLocaleString()}`}
+          value={`Rs. ${summary.realized_gain.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          subValue={`Fees: Rs. ${summary.total_fees_paid.toLocaleString()}`}
           isPositive={summary.realized_gain >= 0}
         />
         <StatCard
           label="Trading Cash"
-          value={`PKR ${summary.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`Rs. ${summary.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           subValue="Available for trades"
           isNeutral={true}
         />
         <StatCard
           label="Dividend Income"
-          value={`PKR ${summary.total_dividends_earned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={`Rs. ${summary.total_dividends_earned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           subValue="Net payouts received"
           isPositive={summary.total_dividends_earned > 0}
         />
@@ -96,12 +96,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <tr key={h.symbol} className="transition-colors hover:bg-gray-50/80">
                       <td className="px-4 py-3.5 font-bold text-gray-900">{h.symbol}</td>
                       <td className="px-4 py-3.5 text-gray-700">{h.quantity.toLocaleString()}</td>
-                      <td className="px-4 py-3.5 text-gray-700">PKR {h.cost_per_share.toFixed(2)}</td>
-                      <td className="px-4 py-3.5 text-gray-900 font-medium">PKR {h.current_price.toFixed(2)}</td>
-                      <td className="px-4 py-3.5 font-semibold text-gray-900">PKR {h.market_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="px-4 py-3.5 text-gray-700">Rs. {h.cost_per_share.toFixed(2)}</td>
+                      <td className="px-4 py-3.5 text-gray-900 font-medium">Rs. {h.current_price.toFixed(2)}</td>
+                      <td className="px-4 py-3.5 font-semibold text-gray-900">Rs. {h.market_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td className="px-4 py-3.5">
                         <Badge variant={isUp ? 'green' : 'red'}>
-                          {isUp ? '+' : ''}{h.unrealized_return_pct.toFixed(2)}% (PKR {h.unrealized_gain.toLocaleString()})
+                          {isUp ? '+' : ''}{h.unrealized_return_pct.toFixed(2)}% (Rs. {h.unrealized_gain.toLocaleString()})
                         </Badge>
                       </td>
                     </tr>

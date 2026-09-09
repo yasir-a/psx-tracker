@@ -76,13 +76,13 @@ export const HoldingsView: React.FC<HoldingsViewProps> = ({
                           {h.sector || 'Miscellaneous'}
                         </td>
                         <td className="px-4 py-3.5 text-gray-700">{h.quantity.toLocaleString()}</td>
-                        <td className="px-4 py-3.5 text-gray-700">PKR {h.cost_per_share.toFixed(2)}</td>
-                        <td className="px-4 py-3.5 font-medium text-gray-900">PKR {h.current_price.toFixed(2)}</td>
-                        <td className="px-4 py-3.5 text-gray-700">PKR {h.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                        <td className="px-4 py-3.5 font-semibold text-gray-900">PKR {h.market_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3.5 text-gray-700">Rs. {h.cost_per_share.toFixed(2)}</td>
+                        <td className="px-4 py-3.5 font-medium text-gray-900">Rs. {h.current_price.toFixed(2)}</td>
+                        <td className="px-4 py-3.5 text-gray-700">Rs. {h.total_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3.5 font-semibold text-gray-900">Rs. {h.market_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                         <td className="px-4 py-3.5">
                           <Badge variant={isUp ? 'green' : 'red'}>
-                            {isUp ? '+' : ''}{h.unrealized_return_pct.toFixed(2)}% (PKR {h.unrealized_gain.toLocaleString(undefined,{ minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                            {isUp ? '+' : ''}{h.unrealized_return_pct.toFixed(2)}% (Rs. {h.unrealized_gain.toLocaleString(undefined,{ minimumFractionDigits: 2, maximumFractionDigits: 2 })})
                           </Badge>
                         </td>
                         <td className="px-4 py-3.5 text-right">
@@ -121,9 +121,10 @@ export const HoldingsView: React.FC<HoldingsViewProps> = ({
                                       <td className="p-2 text-gray-600">{new Date(lot.executed_at).toLocaleDateString()}</td>
                                       <td className="p-2">{lot.original_quantity.toLocaleString()}</td>
                                       <td className="p-2 font-semibold text-gray-900">{lot.remaining_quantity.toLocaleString()}</td>
-                                      <td className="p-2 text-gray-700">PKR {lot.unit_price.toFixed(2)}</td>
-                                      <td className="p-2 font-medium text-emerald-700">PKR {lot.cost_basis_per_share.toFixed(4)}</td>
-                                      <td className="p-2">PKR {lot.remaining_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                      <td className="p-2 text-gray-700">Rs. {lot.unit_price.toFixed(2)}</td>
+                                      <td className="p-2 font-medium text-emerald-700">Rs. {lot.cost_basis_per_share.toFixed(4)}</td>
+                                      <td className="p-2">Rs.
+                                         {lot.remaining_cost_basis.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                       <td className="p-2">
                                         <Badge variant={lot.status === 'OPEN' ? 'green' : 'gray'}>
                                           {lot.status}

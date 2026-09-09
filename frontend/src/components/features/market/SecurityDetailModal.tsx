@@ -75,7 +75,7 @@ export const SecurityDetailModal: React.FC<SecurityDetailModalProps> = ({
           <div>
             <div className="text-sm font-bold tracking-wide">{symbol}</div>
             <div className="text-xs text-gray-400">
-              PKR {(details?.current_price || 0).toFixed(2)}{' '}
+              Rs. {(details?.current_price || 0).toFixed(2)}{' '}
               <span className={isUp ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold'}>
                 {isUp ? '+' : ''}{(details?.change_percent || 0).toFixed(2)}%
               </span>

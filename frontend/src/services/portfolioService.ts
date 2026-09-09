@@ -53,10 +53,12 @@ export const portfolioService = {
     }
 
     const res = await apiClient.get<{ transactions: TransactionRecord[] }>(`/portfolio/${portfolioId}/transactions`);
-    return res.data.transactions.map((tx) => ({
-      ...tx,
-      portfolio_name: portMap.get(tx.portfolio_id) || 'Account',
-    }));
+    return res.data.transactions
+      .map((tx) => ({
+        ...tx,
+        portfolio_name: portMap.get(tx.portfolio_id) || 'Account',
+      }))
+      .sort((a, b) => new Date(b.executed_at).getTime() - new Date(a.executed_at).getTime());
   },
 
   async createTransaction(

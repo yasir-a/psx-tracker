@@ -43,10 +43,10 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20">
+    <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-6 bg-white border-b border-gray-200">
       {/* Portfolio Selector & Actions */}
       <div className="flex items-center gap-3">
-        <label htmlFor="portfolio-select" className="text-xs text-gray-500 font-medium">
+        <label htmlFor="portfolio-select" className="text-xs font-medium text-gray-500">
           Account:
         </label>
         <select
@@ -56,11 +56,11 @@ export const Header: React.FC<HeaderProps> = ({
           className="px-3 py-1.5 text-xs font-semibold border border-gray-300 rounded-lg bg-emerald-50 text-emerald-800 focus:ring-2 focus:ring-emerald-500 shadow-2xs cursor-pointer"
         >
           <option value="consolidated">
-            🌟 All Accounts (PKR {totalConsolidatedCash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+            🌟 All Accounts (Rs. {totalConsolidatedCash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
           </option>
           {portfolios.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} (PKR {(p.cash_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+              {p.name} (Rs. {(p.cash_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
             </option>
           ))}
         </select>
@@ -110,11 +110,11 @@ export const Header: React.FC<HeaderProps> = ({
           {isBackingUp ? 'Backing up...' : 'Backup DB'}
         </button>
 
-        <div className="flex items-center gap-2 text-sm text-gray-700 pl-2 border-l border-gray-200">
-          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">
+        <div className="flex items-center gap-2 pl-2 text-sm text-gray-700 border-l border-gray-200">
+          <div className="flex items-center justify-center w-8 h-8 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">
             {user?.full_name?.charAt(0) || <UserIcon className="w-4 h-4" />}
           </div>
-          <span className="font-medium hidden sm:inline">{user?.full_name}</span>
+          <span className="hidden font-medium sm:inline">{user?.full_name}</span>
         </div>
 
         <button

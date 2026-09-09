@@ -141,7 +141,7 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
             />
 
             <Input
-              label="Dividend Per Share (DPS in PKR)"
+              label="Dividend Per Share (DPS in Rs.)"
               type="number"
               step="0.01"
               placeholder="e.g. 0.66"
@@ -189,7 +189,7 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
             )}
 
             <Input
-              label="Zakat Deducted at Source (PKR, Optional)"
+              label="Zakat Deducted at Source (Rs., Optional)"
               type="number"
               step="0.01"
               placeholder="e.g. 0.00"

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { TransactionRecord } from '../../../types/portfolio';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
-import { PlusCircle, Trash2, Edit2, Download, Upload  } from 'lucide-react';
+import { PlusCircle, Trash2, Edit2, Download, Upload, ChevronLeft, ChevronRight  } from 'lucide-react';
 import { ImportTransactionsModal } from './ImportTransactionsModal';
 import { PortfolioListItem } from '../../../services/portfolioService';
 
@@ -69,17 +69,39 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
   onDeleteTransaction,
   onRefresh,
 }) => {
+  
   const [filterType, setFilterType] = useState<string>('ALL');
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
+  // 1. Filter by type
   const filtered = transactions.filter((t) => {
     if (filterType === 'ALL') return true;
     return t.transaction_type === filterType;
   });
 
+  // 2. Sort latest transactions on top (newest first, without affecting FIFO backend)
+  const sortedTransactions = [...filtered].sort(
+    (a, b) => new Date(b.executed_at).getTime() - new Date(a.executed_at).getTime()
+  );
+
+  // 3. Paginate
+  const totalItems = sortedTransactions.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const validPage = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (validPage - 1) * pageSize;
+  const paginatedTransactions = sortedTransactions.slice(startIndex, startIndex + pageSize);
+
+
+  const handleFilterChange = (type: string) => {
+    setFilterType(type);
+    setCurrentPage(1);
+  };
+
   // Export to Excel / CSV
   const exportToExcel = () => {
-    const headers = ['Date,Account,Type,Symbol,Quantity,Price per Share (PKR),Fees (PKR),Net Amount (PKR),Notes'];
+    const headers = ['Date,Account,Type,Symbol,Quantity,Price per Share (Rs.),Fees (Rs.),Net Amount (Rs.),Notes'];
     const rows = filtered.map((t) => {
     const sym =
         t.transaction_type === 'CASH_DEPOSIT'
@@ -142,7 +164,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
           {['ALL', 'BUY', 'SELL', 'DIVIDEND_CASH', 'TRANSFER_OUT', 'TRANSFER_IN', 'CASH_DEPOSIT', 'FEE'].map((t) => (
             <button
               key={t}
-              onClick={() => setFilterType(t)}
+              onClick={() => handleFilterChange(t)}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
                 filterType === t
                   ? 'bg-gray-900 text-white'
@@ -174,7 +196,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filtered.map((t) => (
+                {paginatedTransactions.map((t) => (
                   <tr key={t.id} className="transition-colors hover:bg-gray-50/60">
                     <td className="px-4 py-3.5 text-xs text-gray-500">
                       {new Date(t.executed_at).toLocaleDateString()}
@@ -219,19 +241,19 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
                     <td className="px-4 py-3.5 text-gray-700">
                       {t.quantity > 0 ? t.quantity.toLocaleString() : '—'}
                     </td>
-                    <td className="px-4 py-3.5 text-gray-700">PKR {t.price_per_share.toFixed(2)}</td>
+                    <td className="px-4 py-3.5 text-gray-700">Rs. {t.price_per_share.toFixed(2)}</td>
                     <td className="px-4 py-3.5 text-gray-500">
-                      PKR {(t.brokerage_fee + t.regulatory_fee).toFixed(2)}
+                      Rs. {(t.brokerage_fee + t.regulatory_fee).toFixed(2)}
                     </td>
                     <td className="px-4 py-3.5 font-semibold text-gray-900">
-                      PKR {
+                      Rs. {
                         (Math.abs(t.net_amount) > 0
                           ? Math.abs(t.net_amount)
                           : (t.quantity * t.price_per_share)
                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                       }
                     </td><td className="px-4 py-3.5 font-semibold text-gray-900">
-                      PKR {Math.abs(t.net_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      Rs. {Math.abs(t.net_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3.5 text-xs text-gray-500 max-w-[200px] truncate">
                       {t.transaction_type === 'FEE' || (t.notes || '').includes('[CGT Credit]')
@@ -270,8 +292,82 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
             </table>
           </div>
         )}
+        {/* Pagination Controls */}
+        {sortedTransactions.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3.5 border-t border-gray-100 text-xs text-gray-600 bg-gray-50/40 rounded-b-xl">
+            <div className="flex items-center gap-2">
+              <span>Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 font-medium text-gray-700 bg-white border border-gray-200 rounded-md cursor-pointer focus:ring-1 focus:ring-emerald-500"
+              >
+                {[10, 15, 25, 50, 100].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <span className="text-gray-400">|</span>
+              <span>
+                Showing <strong className="font-semibold text-gray-800">{startIndex + 1}</strong>–
+                <strong className="font-semibold text-gray-800">
+                  {Math.min(startIndex + pageSize, totalItems)}
+                </strong>{' '}
+                of <strong className="font-semibold text-gray-800">{totalItems}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={validPage === 1}
+                className="inline-flex items-center px-2.5 py-1.5 rounded-md border border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
+                Previous
+              </button>
+              <div className="flex items-center gap-1 px-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - validPage) <= 1)
+                  .map((p, idx, arr) => {
+                    const prev = arr[idx - 1];
+                    const showEllipsis = prev && p - prev > 1;
+                    return (
+                      <React.Fragment key={p}>
+                        {showEllipsis && <span className="px-1 text-gray-400">…</span>}
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(p)}
+                          className={`w-7 h-7 rounded-md text-xs font-semibold transition-colors ${
+                            validPage === p
+                              ? 'bg-gray-900 text-white'
+                              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={validPage === totalPages}
+                className="inline-flex items-center px-2.5 py-1.5 rounded-md border border-gray-200 bg-white font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
-            {isImportOpen && (
+      {isImportOpen && (
         <ImportTransactionsModal
           isOpen={isImportOpen}
           onClose={() => setIsImportOpen(false)}
