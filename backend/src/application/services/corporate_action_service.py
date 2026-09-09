@@ -43,29 +43,33 @@ class CorporateActionService:
         tax_status: TaxStatus = TaxStatus.FILER,
         custom_wht_rate: Decimal | None = None,
         zakat_deducted: Money | None = None,
+        eligible_shares: Decimal | None = None,
         executed_at: datetime | None = None,
     ) -> dict[str, Any]:
         sym = symbol.upper().strip()
         tx_date = executed_at or datetime.now(timezone.utc)
         
-        # 1. Fetch all transactions for this portfolio
-        transactions = self._tx_repo.get_by_portfolio_id(portfolio_id)
-        
-        # 2. Filter transactions up to the dividend execution date
-        prior_txs = [tx for tx in transactions if tx.executed_at <= tx_date]
-        valuation = PortfolioReplayer.replay(prior_txs)
-        holding = valuation.holdings.get(sym)
-
         portfolio = self._portfolio_repo.get_by_id(portfolio_id)
         pname = portfolio.name if portfolio else "this account"
 
-        if not holding or not holding.quantity.is_positive():
-            date_str = tx_date.strftime("%m/%d/%Y")
-            raise ValidationError(
-                f"'{sym}' security did not exist in {pname} on {date_str}. You can only credit dividends for shares held on or before the dividend record date."
-            )
+        if eligible_shares is not None and eligible_shares > Decimal("0"):
+            eligible_qty = Quantity(eligible_shares)
+        else:
+            # 1. Fetch all transactions for this portfolio
+            transactions = self._tx_repo.get_by_portfolio_id(portfolio_id)
+            
+            # 2. Filter transactions up to the dividend execution date
+            prior_txs = [tx for tx in transactions if tx.executed_at <= tx_date]
+            valuation = PortfolioReplayer.replay(prior_txs)
+            holding = valuation.holdings.get(sym)
 
-        eligible_qty = holding.quantity
+            if not holding or not holding.quantity.is_positive():
+                date_str = tx_date.strftime("%m/%d/%Y")
+                raise ValidationError(
+                    f"'{sym}' security did not exist in {pname} on {date_str}. Enter 'Eligible Shares' manually if shares were held on the record date but sold later."
+                )
+
+            eligible_qty = holding.quantity
 
         div_calc = calculate_dividend(
             shares_held=eligible_qty,

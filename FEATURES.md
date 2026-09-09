@@ -138,10 +138,14 @@ Status definitions:
 | :--- | :--- | :--- | :--- | :--- |
 | `TX-005` | Account Fee & Deduction Recording | **Completed** | `ACC-001` | Record 8 predefined deduction types (UIN Fees, CGT Debit, Custody, SST, CDC, Stamp Paper, KYC, SMS) deducting directly from broker/CDC cash balance. |
 
-## Phase 15: Excel / CSV Transaction Ledger Import
+## Phase 15: Excel / CSV Transaction Ledger Import & Ledger Enhancements
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
 | `TX-006` | Excel / CSV Ledger Dump Import | **Completed** | `TX-005` | Direct import of transaction history dumps into specific broker accounts with schema checks, FIFO inventory simulation, line-by-line validation, and atomic commit. |
+| `TX-007` | NCCPL CGT Credit Deposit Handling | **Completed** | `TX-005` | Dedicated deposit type for capital gains tax credits/refunds with distinctive teal badge and automated import classification. |
+| `TX-008` | Full Ledger Editability & Transfer Dates | **Completed** | `TX-006` | Full editing support for dates, regulatory fees, notes, and values across Broker and CDC accounts, plus execution date picker for share transfers. |
+| `TX-009` | Deduction Category Ledger Badging | **Completed** | `TX-005` | Dynamic extraction and display of deduction types (UIN Fees, CGT Debit, etc.) in the Symbol column with amber styling. |
+| `TX-010` | Corporate Actions Eligible Shares Input | **Completed** | `CA-001` | Optional manual override for eligible share count when crediting dividends for securities sold post-book-closure / record date. |
 
 

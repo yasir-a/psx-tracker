@@ -26,6 +26,7 @@ def post_dividend() -> tuple[Response, int]:
     tax_status_str = data.get("tax_status", "FILER")
     custom_wht = data.get("custom_tax_rate")
     zakat_val = data.get("zakat_deducted", 0.0)
+    eligible_shares_val = data.get("eligible_shares")
 
     if not portfolio_id_str or not symbol or dps_val is None:
         raise ValidationError("Missing required fields: portfolio_id, symbol, dividend_per_share")
@@ -36,6 +37,7 @@ def post_dividend() -> tuple[Response, int]:
         dps = Money(Decimal(str(dps_val)), "PKR")
         zakat = Money(Decimal(str(zakat_val)), "PKR") if zakat_val else None
         custom_rate = Decimal(str(custom_wht)) if custom_wht is not None else None
+        eligible_shares = Decimal(str(eligible_shares_val)) if eligible_shares_val else None
     except Exception as e:
         raise ValidationError(f"Invalid input data: {str(e)}")
 
@@ -55,6 +57,7 @@ def post_dividend() -> tuple[Response, int]:
         tax_status=tax_status,
         custom_wht_rate=custom_rate,
         zakat_deducted=zakat,
+        eligible_shares=eligible_shares,
         executed_at=exec_at,
     )
     session.commit()

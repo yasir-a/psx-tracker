@@ -19,6 +19,7 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
     portfolioId === 'consolidated' ? (portfolios[0]?.id || '') : portfolioId
   );
   const [symbol, setSymbol] = useState('');
+  const [eligibleShares, setEligibleShares] = useState('')
   const [dps, setDps] = useState('');
   const [taxStatus, setTaxStatus] = useState<'FILER' | 'NON_FILER' | 'CUSTOM'>('FILER');
   const [customTax, setCustomTax] = useState('');
@@ -57,10 +58,12 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
         tax_status: taxStatus,
         custom_tax_rate: taxStatus === 'CUSTOM' ? parseFloat(customTax) : undefined,
         zakat_deducted: parseFloat(zakat || '0'),
+        eligible_shares: eligibleShares ? parseFloat(eligibleShares) : undefined,
         executed_at: execDate.toISOString(),
       });
       setMessage(`Successfully credited dividend for ${symbol.toUpperCase()} on ${executedAt}!`);
       setSymbol('');
+      setEligibleShares('');
       setDps('');
       onSuccess();
     } catch (err: any) {
@@ -79,15 +82,15 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Record Cash Dividend" subtitle="Credits dividend earnings net of withholding tax and Zakat">
           {message && (
-            <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+            <div className="p-3 mb-4 text-xs font-semibold border rounded-lg bg-emerald-50 border-emerald-200 text-emerald-700">
               {message}
             </div>
           )}
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+            <div className="p-3 mb-4 text-xs font-semibold border rounded-lg bg-rose-50 border-rose-200 text-rose-700">
               {error}
             </div>
           )}
@@ -101,7 +104,7 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
               <select
                 value={selectedPortfolioId}
                 onChange={(e) => setSelectedPortfolioId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold bg-white focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded-lg cursor-pointer focus:ring-2 focus:ring-emerald-500"
               >
                 {portfolios.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -125,6 +128,16 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
               value={symbol}
               onChange={(e) => setSymbol(e.target.value)}
               required
+            />
+
+            <Input
+              label="Eligible Shares (Optional - defaults to held shares)"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Leave blank to use current shares, or enter e.g. 1000"
+              value={eligibleShares}
+              onChange={(e) => setEligibleShares(e.target.value)}
             />
 
             <Input
@@ -192,14 +205,14 @@ export const CorporateActionsView: React.FC<CorporateActionsViewProps> = ({
 
         {/* Corporate Actions Overview Guide */}
         <Card title="Corporate Actions Guide" subtitle="Taxation & accounting methodology">
-          <div className="space-y-4 text-xs text-gray-600 leading-relaxed">
-            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200 text-emerald-800">
+          <div className="space-y-4 text-xs leading-relaxed text-gray-600">
+            <div className="p-3 border rounded-lg bg-emerald-50 border-emerald-200 text-emerald-800">
               <span className="font-bold">FBR Section 150 Dividend Rules:</span>
               <p className="mt-1">
                 Dividends are subject to 15% WHT for active tax filers and 30% WHT for non-filers. Net dividend income is credited and tracked separately for annual tax returns.
               </p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-blue-800">
+            <div className="p-3 text-blue-800 border border-blue-200 rounded-lg bg-blue-50">
               <span className="font-bold">Bonus Shares & Stock Splits:</span>
               <p className="mt-1">
                 Bonus shares and splits increase share quantity while adjusting lot cost basis per share proportionally without taxable capital events.
