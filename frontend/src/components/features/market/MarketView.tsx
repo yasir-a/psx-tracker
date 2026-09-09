@@ -59,7 +59,7 @@ export const MarketView: React.FC = () => {
 
       <Card>
         {/* Search Input Bar with Enter Submit */}
-        <form onSubmit={handleSearch} className="mb-6 flex gap-2 max-w-md">
+        <form onSubmit={handleSearch} className="flex max-w-md gap-2 mb-6">
           <div className="relative flex-1">
             <Input
               placeholder="Enter PSX symbol and hit Enter (e.g. EFERT, SYS, ENGRO)..."
@@ -75,21 +75,21 @@ export const MarketView: React.FC = () => {
         </form>
 
         {isLoading ? (
-          <div className="py-16 flex flex-col items-center justify-center text-gray-500">
-            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mb-3" />
+          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+            <Loader2 className="w-8 h-8 mb-3 animate-spin text-emerald-600" />
             <p className="text-xs font-semibold">
               Fetching live quote for {query.toUpperCase()} from Pakistan Stock Exchange...
             </p>
           </div>
         ) : errorMessage ? (
-          <div className="text-center py-12 text-rose-600 text-sm font-medium bg-rose-50/50 rounded-xl border border-rose-100">
+          <div className="py-12 text-sm font-medium text-center border text-rose-600 bg-rose-50/50 rounded-xl border-rose-100">
             {errorMessage}
           </div>
         ) : !hasSearched || !quote ? (
-          <div className="text-center py-16 text-gray-400 text-sm">
-            <Search className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+          <div className="py-16 text-sm text-center text-gray-400">
+            <Search className="w-10 h-10 mx-auto mb-3 text-gray-300" />
             <p className="font-medium text-gray-600">No symbol searched yet</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="mt-1 text-xs text-gray-400">
               Type a stock ticker like <span className="font-semibold text-emerald-700">EFERT</span>,{' '}
               <span className="font-semibold text-emerald-700">SYS</span>, or{' '}
               <span className="font-semibold text-emerald-700">ENGRO</span> and hit Enter.
@@ -97,13 +97,13 @@ export const MarketView: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+            <table className="w-full text-sm text-left whitespace-nowrap">
+              <thead className="text-xs font-semibold tracking-wider text-gray-500 uppercase bg-gray-50">
                 <tr>
                   <th className="px-4 py-3">Symbol</th>
                   <th className="px-4 py-3">Current Price</th>
                   <th className="px-4 py-3">Previous Close</th>
-                  <th className="px-4 py-3">Change (PKR)</th>
+                  <th className="px-4 py-3">Change (Rs.)</th>
                   <th className="px-4 py-3">Change (%)</th>
                   <th className="px-4 py-3">Volume</th>
                   <th className="px-4 py-3 text-right">Analytics</th>
@@ -112,7 +112,7 @@ export const MarketView: React.FC = () => {
               <tbody className="divide-y divide-gray-100">
                 <tr
                   onClick={() => setSelectedSymbol(quote.symbol)}
-                  className="hover:bg-emerald-50/50 transition-colors cursor-pointer group"
+                  className="transition-colors cursor-pointer hover:bg-emerald-50/50 group"
                 >
                   <td className="px-4 py-3.5 font-bold text-gray-900 group-hover:text-emerald-700 flex items-center gap-2">
                     <span className="bg-gray-100 text-gray-900 px-2.5 py-1 rounded-md border text-xs font-bold group-hover:bg-emerald-100 group-hover:border-emerald-300">
@@ -120,10 +120,10 @@ export const MarketView: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3.5 font-bold text-gray-900">
-                    PKR {(quote.current_price || 0).toFixed(2)}
+                    Rs. {(quote.current_price || 0).toFixed(2)}
                   </td>
                   <td className="px-4 py-3.5 text-gray-600">
-                    PKR {(quote.previous_close || 0).toFixed(2)}
+                    Rs. {(quote.previous_close || 0).toFixed(2)}
                   </td>
                   <td className={`px-4 py-3.5 font-medium ${isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {isUp ? '+' : ''}{(quote.change || 0).toFixed(2)}
@@ -135,7 +135,7 @@ export const MarketView: React.FC = () => {
                   </td>
                   <td className="px-4 py-3.5 text-gray-500">{(quote.volume || 0).toLocaleString()}</td>
                   <td className="px-4 py-3.5 text-right">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white transition-colors border border-emerald-200 shadow-2xs">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold transition-colors border rounded-lg text-emerald-700 bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white border-emerald-200 shadow-2xs">
                       <BarChart2 className="w-3.5 h-3.5" />
                       View Details
                       <ChevronRight className="w-3.5 h-3.5" />

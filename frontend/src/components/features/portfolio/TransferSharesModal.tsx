@@ -126,7 +126,7 @@ export const TransferSharesModal: React.FC<TransferSharesModalProps> = ({
         />
 
         <Input
-          label="CDC Transfer Fee / Broker Charges (PKR)"
+          label="CDC Transfer Fee / Broker Charges (Rs.)"
           type="number"
           step="0.01"
           placeholder="0.00"

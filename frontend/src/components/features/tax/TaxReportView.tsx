@@ -46,32 +46,32 @@ export const TaxReportView: React.FC<TaxReportViewProps> = ({ portfolioId }) => 
       </div>
 
       {report && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard
             label="Total Gross Dividends"
-            value={`PKR ${report.total_gross_dividend.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+            value={`Rs. ${report.total_gross_dividend.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
             subValue={`${report.dividend_count} distributions recorded`}
             isNeutral={true}
           />
           <StatCard
             label="Advance WHT Paid"
-            value={`PKR ${report.total_withholding_tax_paid.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+            value={`Rs. ${report.total_withholding_tax_paid.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
             subValue="Claimable on FBR Return"
             isPositive={true}
           />
           <StatCard
             label="Net Dividend Income"
-            value={`PKR ${report.net_dividend_income.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-            subValue={`Zakat Deducted: PKR ${report.total_zakat_deducted.toLocaleString()}`}
+            value={`Rs. ${report.net_dividend_income.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+            subValue={`Zakat Deducted: Rs. ${report.total_zakat_deducted.toLocaleString()}`}
             isNeutral={true}
           />
         </div>
       )}
 
       <Card title={`FBR Tax Summary — Tax Year ${taxYear}`}>
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+        <div className="p-4 space-y-2 text-xs border border-gray-200 rounded-lg bg-gray-50">
           <p className="font-semibold text-gray-900">FBR Tax Return Filing Reference:</p>
-          <p className="text-gray-600 leading-relaxed">
+          <p className="leading-relaxed text-gray-600">
             Under <strong>Section 150 of the Income Tax Ordinance 2001</strong>, tax deducted at source from dividends
             is an adjustable advance tax for Filers (15%) or full and final tax for Non-Filers (30%).
             Use the figures above when submitting your annual wealth and income return in Iris.

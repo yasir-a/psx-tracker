@@ -147,5 +147,6 @@ Status definitions:
 | `TX-008` | Full Ledger Editability & Transfer Dates | **Completed** | `TX-006` | Full editing support for dates, regulatory fees, notes, and values across Broker and CDC accounts, plus execution date picker for share transfers. |
 | `TX-009` | Deduction Category Ledger Badging | **Completed** | `TX-005` | Dynamic extraction and display of deduction types (UIN Fees, CGT Debit, etc.) in the Symbol column with amber styling. |
 | `TX-010` | Corporate Actions Eligible Shares Input | **Completed** | `CA-001` | Optional manual override for eligible share count when crediting dividends for securities sold post-book-closure / record date. |
+| `TX-011` | Ledger Pagination & Newest-First Sort | **Completed** | `TX-006` | Client-side UI sorting displaying newest transactions on top, combined with paginated ledger controls (10/15/25/50/100 rows per page) and responsive page jump buttons without altering backend FIFO replay order. |
 
 

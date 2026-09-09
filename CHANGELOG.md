@@ -10,7 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Phase 15: Excel / CSV Transaction Ledger Import**
+- **Phase 15: Excel / CSV Transaction Ledger Import & Ledger Enhancements**
+  - Added modern page-numbered pagination controls to `TransactionsView` (configurable 10, 15, 25, 50, 100 rows per page) preventing DOM bloat and ensuring instant loading times as transaction history grows.
+  - Implemented client-side newest-first sorting for the Transaction Ledger, displaying newly recorded transactions immediately on Row 1 without altering backend FIFO replay order.
+  - Added automatic page reset on trade type filter changes.
+  - Added optional **Eligible Shares** input to Corporate Actions Dividend form, allowing investors to credit accurate dividends for shares held on the record date but sold post-book-closure.
+  - Added execution date picker to `TransferSharesModal` for recording accurate historical transfer dates between Broker and CDC IAS accounts.
+  - Enabled full transaction editability (dates, brokerage & regulatory fees, prices, notes) across Broker and CDC accounts with synchronized ledger recalculation.
+  - Added NCCPL `CGT Credit` cash deposit option with custom teal badges and automated import detection.
   - Direct import of transaction history dumps (.csv / Excel compatible) into specific broker or CDC accounts with automatic cross-application synchronization.
   - Strict multi-layered validation: header structure verification, data type normalization, chronological sorting, and sequential FIFO share inventory simulation to prevent negative share states.
   - Comprehensive line-by-line error reporting with row numbers and specific field violations on rejection.

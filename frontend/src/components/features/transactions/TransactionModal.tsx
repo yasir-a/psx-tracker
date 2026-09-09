@@ -160,7 +160,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           >
             {(isDividend ? portfolios : availablePortfolios).map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} (Cash: PKR {p.cash_balance.toLocaleString()})
+                {p.name} (Cash: Rs. {p.cash_balance.toLocaleString()})
               </option>
             ))}
           </select>
@@ -278,12 +278,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         <Input
           label={
             isFee
-              ? 'Deduction Amount (PKR)'
+              ? 'Deduction Amount (Rs.)'
               : isCash
-              ? 'Amount (PKR)'
+              ? 'Amount (Rs.)'
               : isDividend
-              ? 'Dividend Per Share (DPS in PKR)'
-              : 'Price per Share (PKR)'
+              ? 'Dividend Per Share (DPS in Rs.)'
+              : 'Price per Share (Rs.)'
           }
           type="number"
           step="0.01"
@@ -296,7 +296,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         {/* Brokerage / Taxes (Hidden for Cash and Deductions) */}
         {!isCash && !isFee && (
           <Input
-            label={isDividend ? "Tax & Zakat Deductions (PKR)" : "Brokerage & Regulatory Fees (PKR)"}
+            label={isDividend ? "Tax & Zakat Deductions (Rs.)" : "Brokerage & Regulatory Fees (Rs.)"}
             type="number"
             step="0.01"
             placeholder="e.g. 15.00"

@@ -293,7 +293,7 @@ export const PortfolioBreakdown: React.FC<PortfolioBreakdownProps> = ({
                         {activeHovered.percentage.toFixed(1)}%
                       </span>
                       <span className="text-[9px] text-gray-500 font-mono">
-                        PKR {(activeHovered.value / 1000).toFixed(0)}k
+                        Rs. {(activeHovered.value / 1000).toFixed(0)}k
                       </span>
                     </>
                   ) : (
@@ -302,7 +302,7 @@ export const PortfolioBreakdown: React.FC<PortfolioBreakdownProps> = ({
                         Total Stock
                       </span>
                       <span className="font-mono text-xs font-black text-gray-900">
-                        PKR {(totalStockValue / 1000).toFixed(0)}k
+                        Rs. {(totalStockValue / 1000).toFixed(0)}k
                       </span>
                       <span className="text-[9px] text-emerald-600 font-semibold">
                         {holdings.length} {holdings.length === 1 ? 'Holding' : 'Holdings'}
@@ -344,7 +344,7 @@ export const PortfolioBreakdown: React.FC<PortfolioBreakdownProps> = ({
 
                     <div className="flex items-center gap-3 text-right shrink-0">
                       <span className="font-mono text-gray-600 text-[11px]">
-                        PKR {slice.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        Rs. {slice.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </span>
                       <span className="w-12 font-mono font-bold text-right text-gray-900">
                         {slice.percentage.toFixed(1)}%
@@ -362,7 +362,7 @@ export const PortfolioBreakdown: React.FC<PortfolioBreakdownProps> = ({
       <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
         <span>Allocation: {activeTab === 'company' ? 'By Company' : 'By PSX Sector'}</span>
         <span className="font-mono font-semibold text-gray-700">
-          Total: PKR {totalStockValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          Total: Rs. {totalStockValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
       </div>
     </Card>

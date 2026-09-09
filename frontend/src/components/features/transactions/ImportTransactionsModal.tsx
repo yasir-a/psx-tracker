@@ -57,7 +57,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
 
   const downloadSampleTemplate = () => {
     const csvContent =
-      'Date,Type,Symbol,Quantity,Price per Share (PKR),Fees (PKR),Notes\n' +
+      'Date,Type,Symbol,Quantity,Price per Share (Rs.),Fees (Rs.),Notes\n' +
       '2026-01-01,CASH_DEPOSIT,,0,500000.00,0,Initial capital deposit\n' +
       '2026-01-05,BUY,SYS,1000,420.00,420.00,Brokerage trade confirmation #1024\n' +
       '2026-01-10,FEE,,0,300.00,0,[UIN FEES] Account maintenance\n' +
@@ -142,7 +142,7 @@ export const ImportTransactionsModal: React.FC<ImportTransactionsModalProps> = (
           >
             {portfolios.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} (Current Cash: PKR {p.cash_balance.toLocaleString()})
+                {p.name} (Current Cash: Rs. {p.cash_balance.toLocaleString()})
               </option>
             ))}
           </select>

@@ -73,7 +73,7 @@ const MainApp: React.FC = () => {
         } else {
           // Clean empty state for new user
           setValuationData({
-            portfolio: { id: 'consolidated', name: 'All Accounts', currency: 'PKR', is_consolidated: true },
+            portfolio: { id: 'consolidated', name: 'All Accounts', currency: 'Rs.', is_consolidated: true },
             summary: {
               total_portfolio_value: 0,
               total_stock_value: 0,

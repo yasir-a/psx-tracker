@@ -30,7 +30,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ portfolioId }) => 
   if (isLoading || !data) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+        <div className="w-8 h-8 border-b-2 rounded-full animate-spin border-emerald-600"></div>
       </div>
     );
   }
@@ -47,7 +47,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ portfolioId }) => 
       </div>
 
       {/* Benchmark KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Portfolio Total Return"
           value={`${data.benchmark.portfolio_return_pct >= 0 ? '+' : ''}${data.benchmark.portfolio_return_pct}%`}
@@ -75,10 +75,10 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ portfolioId }) => 
       </div>
 
       {/* Sector Concentration Visualizer */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Sector Concentration & Weighting" subtitle="Diversification exposure across PSX sectors">
           {data.sectors.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 text-xs">No active stock positions.</div>
+            <div className="py-8 text-xs text-center text-gray-500">No active stock positions.</div>
           ) : (
             <div className="space-y-4">
               {data.sectors.map((sec) => (
@@ -92,12 +92,12 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ portfolioId }) => 
                         </span>
                       )}
                     </span>
-                    <span className="text-gray-600 font-medium">
-                      {sec.weight_pct}% (PKR {sec.market_value.toLocaleString()})
+                    <span className="font-medium text-gray-600">
+                      {sec.weight_pct}% (Rs. {sec.market_value.toLocaleString()})
                     </span>
                   </div>
                   {/* Progress Bar */}
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div className="w-full h-2 overflow-hidden bg-gray-100 rounded-full">
                     <div
                       className={`h-2 rounded-full ${sec.is_concentrated ? 'bg-amber-500' : 'bg-emerald-600'}`}
                       style={{ width: `${Math.min(sec.weight_pct, 100)}%` }}
@@ -112,8 +112,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ portfolioId }) => 
         {/* NCCPL Section 37A Capital Gains Tax Schedule */}
         <Card title="NCCPL Capital Gains Tax (CGT) Schedule" subtitle="Section 37A holding period tax estimates">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 text-gray-500 font-semibold uppercase">
+            <table className="w-full text-xs text-left">
+              <thead className="font-semibold text-gray-500 uppercase bg-gray-50">
                 <tr>
                   <th className="p-2">Holding Period</th>
                   <th className="p-2">Realized Gain</th>
@@ -125,9 +125,9 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ portfolioId }) => 
                 {data.cgt_schedule.map((item) => (
                   <tr key={item.holding_period} className="hover:bg-gray-50/50">
                     <td className="p-2 font-medium text-gray-900">{item.holding_period}</td>
-                    <td className="p-2 font-semibold text-gray-900">PKR {item.realized_gain.toLocaleString()}</td>
-                    <td className="p-2 text-emerald-700 font-medium">PKR {item.estimated_tax_filer.toLocaleString()}</td>
-                    <td className="p-2 text-rose-700 font-medium">PKR {item.estimated_tax_non_filer.toLocaleString()}</td>
+                    <td className="p-2 font-semibold text-gray-900">Rs. {item.realized_gain.toLocaleString()}</td>
+                    <td className="p-2 font-medium text-emerald-700">Rs. {item.estimated_tax_filer.toLocaleString()}</td>
+                    <td className="p-2 font-medium text-rose-700">Rs. {item.estimated_tax_non_filer.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
