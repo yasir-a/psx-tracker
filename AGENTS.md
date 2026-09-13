@@ -138,7 +138,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 15 — Operational (Excel / CSV Transaction Ledger Import & Ledger Enhancements)**
+* **Current Phase:** **Phase 16 — Operational (Live Market Price Sync, Real-Time Valuation & Resilient DPS Scraper)**
 * **Status:** Complete production-grade PSX Portfolio Tracker:
   - Ledger-grade FIFO lot accounting & multi-account broker management (*Darson*, *BMA*, *CDC IAS*, inter-account share transfers with custom transfer dates, and consolidated views).
   - Corporate Actions engine (15% Filer / 30% Non-Filer WHT, Zakat deductions, Bonus shares, Rights, Splits with custom eligible shares support for post-record-date sold positions).
@@ -148,8 +148,10 @@ psx-tracker/
   - **Phase 12 Market Terminal**: Interactive full-featured financial terminal for PSX stocks with **Live**, **Fundamentals**, **Technicals**, **Announcements**, **Profile**, and **Competitors**.
   - **Phase 13 Admin Management**: Server-side role-based authorization (`@admin_required`), CLI setup script (`backend/scripts/setup_admin.py`), user directory dashboard, Argon2id password reset, and cascading hard-deletion.
   - **Phase 14 Account Deductions & NCCPL Credits**: Predefined deduction recording (UIN Fees, CGT Debit, Custody, SST, CDC, Stamp Paper, KYC, SMS Charges) and NCCPL CGT Credit cash additions with dedicated ledger badges.
-  - **Phase 15 Excel / CSV Import & Ledger Enhancements**: Direct transaction history dump import into broker accounts with strict schema checks, FIFO simulation, chronological sorting, full transaction editability (dates, fees, notes, and values across Broker and CDC accounts), and live UI preview.
+  - **Phase 15 Excel / CSV Import & Ledger Enhancements**: Direct transaction history dump import into broker accounts with strict schema checks, FIFO simulation, chronological sorting, full transaction editability, and pagination controls.
+  - **Phase 16 Live Market Price Sync & Resilient Scraper**: Multi-tiered quote scraper supporting live intraday ticks (`/timeseries/intraday/{sym}`) and official closing EOD fallback (`/timeseries/eod/{sym}`) with PostgreSQL persistence; fast in-memory caching (10s–20s TTL) with one-click **Live Sync** cache invalidation (`POST /api/v1/market/refresh`), non-blocking transaction creation UX, and parallel concurrent quote ingestion preventing IP blocks and sequential stalls.
   - 100% automated test suite passing (41 tests) with clean TypeScript Vite frontend builds.
+
 
 
 

@@ -17,6 +17,7 @@ import { portfolioService, PortfolioListItem } from './services/portfolioService
 import { PortfolioValuationResponse, TransactionRecord } from './types/portfolio';
 import { Button } from './components/ui/Button';
 import { PlusCircle, Wallet } from 'lucide-react';
+import { marketService } from './services/marketService';
 
 const MainApp: React.FC = () => {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -60,6 +61,19 @@ const MainApp: React.FC = () => {
       setTransactions(txs);
     } catch {
       // Handle error
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleLiveSync = async () => {
+    setIsActionLoading(true);
+    try {
+      await marketService.refreshCache();
+      await refreshValuation(activePortfolioId);
+      showToast('✅ Live market prices updated from PSX!');
+    } catch (err: any) {
+      showToast('❌ Failed to sync live prices from PSX');
     } finally {
       setIsActionLoading(false);
     }
@@ -148,6 +162,8 @@ const MainApp: React.FC = () => {
       onOpenCreatePortfolio={() => setIsCreateAccountOpen(true)}
       onOpenTransferModal={() => setIsTransferModalOpen(true)}
       onDeletePortfolio={handleDeletePortfolio}
+      onRefreshMarket={handleLiveSync}
+      isRefreshingMarket={isActionLoading}
     >
       {(activeTab) => {
         if (!valuationData) {

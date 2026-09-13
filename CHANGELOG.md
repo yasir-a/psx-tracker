@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+- **Phase 16: Live Market Price Sync, Real-Time Valuation & Resilient DPS Scraper**
+  - Resolved Market Price column defaulting to Avg Cost by engineering a multi-tiered scraper fallback in `PSXScraperMarketDataProvider`: extracts latest trade tick (`ticks[0]`) from live intraday `/timeseries/intraday/{sym}`, falls back to official closing bar from `/timeseries/eod/{sym}` for off-hours/weekends, and falls back to PostgreSQL persisted quotes.
+  - Resolved background worker context failures by eliminating unsafe thread-local Flask `g.db_session` commits inside `ThreadPoolExecutor` parallel workers.
+  - Implemented one-click **Live Sync** in the application Header (`Header.tsx` and `Shell.tsx`), allowing users to trigger on-demand market valuation synchronization across all broker positions with visual spinner feedback and status toasts.
+  - Added dedicated cache invalidation endpoint (`POST /api/v1/market/refresh`) and `marketService.refreshCache()` to force-flush in-memory cache on manual sync without risking external IP rate-limit blocks.
+  - Tuned `MARKET_DATA_CACHE_TTL_SECONDS` from 300s to 10s–20s in `backend/src/config.py` for responsive real-time prices while shielding PSX DPS from burst traffic.
+  - Optimized Transaction creation UX (`TransactionModal.tsx`) to close modals immediately upon server response, eliminating perceived 20-second freezes while background market revaluations run.
 - **Phase 15: Excel / CSV Transaction Ledger Import & Ledger Enhancements**
   - Added modern page-numbered pagination controls to `TransactionsView` (configurable 10, 15, 25, 50, 100 rows per page) preventing DOM bloat and ensuring instant loading times as transaction history grows.
   - Implemented client-side newest-first sorting for the Transaction Ledger, displaying newly recorded transactions immediately on Row 1 without altering backend FIFO replay order.

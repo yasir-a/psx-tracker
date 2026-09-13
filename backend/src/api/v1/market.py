@@ -109,3 +109,12 @@ def get_security_details(symbol: str) -> tuple[Response, int]:
     service = get_market_service()
     data = service.get_security_details(symbol.upper().strip())
     return jsonify(data), 200
+
+@market_bp.route("/refresh", methods=["POST"])
+def refresh_market_cache() -> tuple[Response, int]:
+    """Force flush in-memory market cache to fetch fresh live prices from PSX."""
+    from src.infrastructure.cache.memory_cache import get_cache
+    cache = get_cache()
+    if cache:
+        cache.clear()
+    return jsonify({"message": "Market cache cleared successfully"}), 200

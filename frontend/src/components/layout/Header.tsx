@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOut, User as UserIcon, PlusCircle, ArrowLeftRight, Trash2, Database } from 'lucide-react';
+import { LogOut, User as UserIcon, PlusCircle, ArrowLeftRight, Trash2, Database, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { PortfolioListItem, portfolioService } from '../../services/portfolioService';
 
@@ -10,6 +10,8 @@ interface HeaderProps {
   onOpenCreatePortfolio: () => void;
   onOpenTransferModal: () => void;
   onDeletePortfolio?: (id: string, name: string) => void;
+  onRefreshMarket?: () => void;
+  isRefreshingMarket?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,6 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCreatePortfolio,
   onOpenTransferModal,
   onDeletePortfolio,
+  onRefreshMarket,
+  isRefreshingMarket = false,
 }) => {
   const { user, logout } = useAuth();
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -99,6 +103,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* User Info, Backup & Logout */}
       <div className="flex items-center gap-3">
+                {/* Live Market Price Sync Button */}
+        {onRefreshMarket && (
+          <button
+            onClick={onRefreshMarket}
+            disabled={isRefreshingMarket}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
+            title="Fetch live market prices for all positions"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isRefreshingMarket ? 'animate-spin' : ''}`} />
+            {isRefreshingMarket ? 'Syncing...' : 'Live Sync'}
+          </button>
+        )}
         {/* DB Backup Button */}
         <button
           onClick={handleBackup}

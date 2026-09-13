@@ -11,6 +11,11 @@ export interface HistoricalPriceBar {
 }
 
 export const marketService = {
+
+  async refreshCache(): Promise<void> {
+    await apiClient.post('/market/refresh');
+  },
+  
   async getBulkQuotes(symbols: string[]): Promise<Record<string, MarketQuote>> {
     const res = await apiClient.post<any>('/market/quotes', { symbols });
     if (res.data && res.data.quotes && typeof res.data.quotes === 'object') {

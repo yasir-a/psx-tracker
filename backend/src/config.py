@@ -37,8 +37,8 @@ class Settings(BaseSettings):
 
     # Market Data Settings
     MARKET_DATA_PROVIDER: Literal["mock", "psx_scraper"] = "psx_scraper"
-    MARKET_DATA_CACHE_TTL_SECONDS: int = 300  # 5 minutes
-    PSX_SCRAPER_TIMEOUT_SECONDS: float = 5.0
+    MARKET_DATA_CACHE_TTL_SECONDS: int = 10  # 10 for live market price sync
+    PSX_SCRAPER_TIMEOUT_SECONDS: float = 2.0
 
     # CORS Settings
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
