@@ -149,4 +149,12 @@ Status definitions:
 | `TX-010` | Corporate Actions Eligible Shares Input | **Completed** | `CA-001` | Optional manual override for eligible share count when crediting dividends for securities sold post-book-closure / record date. |
 | `TX-011` | Ledger Pagination & Newest-First Sort | **Completed** | `TX-006` | Client-side UI sorting displaying newest transactions on top, combined with paginated ledger controls (10/15/25/50/100 rows per page) and responsive page jump buttons without altering backend FIFO replay order. |
 
+## Phase 16: Live Market Price Sync & Resilient DPS Scraper
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `MKT-009` | Multi-Tiered PSX Market Price Scraper | **Completed** | `MKT-004` | Resolves Market Price defaulting to Avg Cost. Ingests newest intraday tick (`ticks[0]`), falls back to official closing bar (`/timeseries/eod/{sym}`), and falls back to PostgreSQL persisted quotes. |
+| `MKT-010` | Thread-Safe Parallel Bulk Ingestion | **Completed** | `MKT-009` | Concurrent parallel quote fetching via `ThreadPoolExecutor` eliminating unsafe Flask thread-local `g.db_session` context crashes. |
+| `MKT-011` | On-Demand Live Sync & Cache Invalidation | **Completed** | `MKT-009` | One-click **Live Sync** in Header with cache flush endpoint (`POST /api/v1/market/refresh`), visual spinning indicator, and toast notifications. |
+| `MKT-012` | Optimized Transaction Modal UX | **Completed** | `TX-001` | Immediate modal closure upon 201 response, eliminating 20s blocking spinners while valuation refreshes asynchronously. |
 

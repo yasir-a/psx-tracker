@@ -151,22 +151,22 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
 
     def get_quote(self, symbol: str) -> MarketQuote | None:
         sym = symbol.upper().strip()
-        repo = self._get_repo()
+        today = date.today()
 
+        # 1. Fetch live intraday time-series from PSX DPS
         try:
-            # 1. Fetch live intraday time-series from PSX
             resp = self._client.get(f"/timeseries/intraday/{sym}")
             if resp.status_code == 200:
                 data = resp.json()
                 ticks = data.get("data", [])
                 if ticks:
-                    # PSX DPS returns newest tick at index 0
-                    latest_tick = ticks[0]  # [timestamp, price, volume, open]
+                    # PSX DPS returns ticks with NEWEST at index 0
+                    latest_tick = ticks[0]
                     prev_tick = ticks[1] if len(ticks) > 1 else latest_tick
 
                     current_price = Decimal(str(latest_tick[1]))
                     prev_close = Decimal(str(prev_tick[1]))
-                    volume = int(latest_tick[2]) if len(latest_tick) > 2 else 0
+                    volume = int(latest_tick[2]) if len(latest_tick) > 2 and latest_tick[2] is not None else 0
 
                     quote = MarketQuote.create(
                         symbol=sym,
@@ -176,45 +176,71 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
                         updated_at=datetime.now(timezone.utc),
                         status=DataStatus.FRESH,
                     )
-
-                    # Persist to PostgreSQL historical prices
-                    today = date.today()
-                    open_p = Decimal(str(latest_tick[3])) if len(latest_tick) > 3 else current_price
-                    all_prices = [Decimal(str(t[1])) for t in ticks if len(t) > 1]
-                    high_p = max(all_prices) if all_prices else current_price
-                    low_p = min(all_prices) if all_prices else current_price
-
-                    repo.save_historical_price(
-                        HistoricalPrice(
-                            symbol=sym,
-                            trade_date=today,
-                            open_price=Money(open_p, "PKR"),
-                            high_price=Money(high_p, "PKR"),
-                            low_price=Money(low_p, "PKR"),
-                            close_price=Money(current_price, "PKR"),
-                            volume=volume,
-                        )
-                    )
-                    get_db_session().commit()
                     return quote
         except Exception as e:
-            logger.warning("PSX live quote fetch failed for %s: %s. Attempting PostgreSQL fallback.", sym, str(e))
+            logger.warning("PSX live intraday quote fetch failed for %s: %s", sym, str(e))
 
-        # 2. Resilient Fallback: Retrieve last known valid price from PostgreSQL
-        fallback_quote = repo.get_latest_persisted_quote(sym)
-        if fallback_quote:
-            logger.info("Serving PostgreSQL persisted fallback quote for %s (STALE)", sym)
-            return fallback_quote
+        # 2. Fallback: Fetch official closing price bar from PSX EOD
+        try:
+            eod_resp = self._client.get(f"/timeseries/eod/{sym}")
+            if eod_resp.status_code == 200:
+                eod_data = eod_resp.json()
+                bars = eod_data.get("data", [])
+                if bars:
+                    # Newest bar at index 0
+                    latest_bar = bars[0]
+                    prev_bar = bars[1] if len(bars) > 1 else latest_bar
+
+                    c_price = Decimal(str(latest_bar[4]))
+                    p_close = Decimal(str(prev_bar[4]))
+                    vol = int(latest_bar[5]) if len(latest_bar) > 5 and latest_bar[5] is not None else 0
+                    bar_date = datetime.fromtimestamp(latest_bar[0], tz=timezone.utc).date()
+
+                    quote = MarketQuote.create(
+                        symbol=sym,
+                        current_price=Money(c_price, "PKR"),
+                        previous_close=Money(p_close, "PKR"),
+                        volume=vol,
+                        updated_at=datetime.combine(bar_date, datetime.min.time(), tzinfo=timezone.utc),
+                        status=DataStatus.FRESH,
+                    )
+                    return quote
+        except Exception as e:
+            logger.warning("PSX EOD fallback failed for %s: %s", sym, str(e))
+
+        # 3. Database Fallback: Retrieve last known valid price from PostgreSQL
+        try:
+            repo = self._get_repo()
+            fallback_quote = repo.get_latest_persisted_quote(sym)
+            if fallback_quote:
+                return fallback_quote
+        except Exception:
+            pass
 
         logger.error("No market quote or PostgreSQL price available for %s", sym)
         return None
-
+    
     def get_bulk_quotes(self, symbols: Sequence[str]) -> dict[str, MarketQuote]:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        clean_symbols = [s.upper().strip() for s in symbols if s]
+        if not clean_symbols:
+            return {}
+
         results: dict[str, MarketQuote] = {}
-        for s in symbols:
-            q = self.get_quote(s)
-            if q is not None:
-                results[s.upper().strip()] = q
+        # Fetch quotes concurrently across symbols to avoid N * timeout sequential stalls
+        max_workers = min(len(clean_symbols), 8)
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_sym = {executor.submit(self.get_quote, sym): sym for sym in clean_symbols}
+            for future in as_completed(future_to_sym):
+                sym = future_to_sym[future]
+                try:
+                    quote = future.result()
+                    if quote is not None:
+                        results[sym] = quote
+                except Exception as exc:
+                    logger.warning("Parallel quote fetch failed for %s: %s", sym, exc)
+
         return results
 
     def get_historical_prices(

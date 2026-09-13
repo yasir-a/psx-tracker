@@ -126,8 +126,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         });
       }
       
-      onSuccess();
       onClose();
+      onSuccess();
     } catch (err: any) {
       setError(err?.response?.data?.error?.message || 'Transaction failed');
     } finally {

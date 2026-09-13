@@ -9,10 +9,10 @@ Designed with ledger-grade financial accounting, full support for PSX-specific c
 ## Key Features (Planned & Roadmap)
 
 * **Ledger-Grade Accounting**: Complete portfolio state reconstruction from transaction logs (FIFO lot tracking).
-* **PSX Market Support**: PSX symbol mapping, historical and daily price feeds, and sector classifications.
+* **PSX Market Support & Live Sync**: Real-time quotes from PSX DPS with official closing price fallback, one-click header Live Sync, historical EOD charts, and sector classifications.
 * **Corporate Actions**: Proper accounting for cash dividends, bonus shares, right shares, stock splits, and symbol changes.
 * **Performance & Analytics**: Realized vs. unrealized P&L, day return, total return, dividend yields, sector exposure, and benchmark comparison against KSE-100.
-* **Security & Reliability**: PostgreSQL authoritative storage, Redis for rate limiting and caching, isolated domain logic.
+* **Security & Reliability**: PostgreSQL authoritative storage, thread-safe in-memory caching, rate-limit shielding, and completely framework-isolated domain logic.
 
 ---
 
