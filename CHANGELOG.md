@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Phase 17: Executive Financial Dashboard & Brokerage Fee Accounting Precision**
+  - Upgraded the Portfolio Dashboard to a 10-metric financial KPI command center organized into two structured 5-column tiers:
+    - **Wealth & Performance Tier**: Total Portfolio Value (with live Today's P&L movement in rupees and %), Equities Market Value (with % allocation and active positions count), Unrealized P&L, All-Time Net Profit (Total Net ROI), and Realized Profit.
+    - **Capital Flows & Liquidity Tier**: Trading Cash, Total Cash Deposited, Total Cash Withdrawn, Net Injected Capital (Deposited less Withdrawn), and Dividend Income (with stock dividend yield %).
+  - Added proportional Asset Allocation bar comparing Equities vs. Trading Cash, accompanied by individual Broker Accounts Liquidity cards showing real-time available cash per broker (Darson, BMA, CDC IAS) and consolidated views.
+  - Added **Today's Key Movers** spotlight cards highlighting the top performing stock (Top Gainer) and lagging stock (Top Pullback) based on live PSX intraday movements.
+  - Enhanced backend accounting engine (`portfolio_replayer.py` and `portfolio_accounting_service.py`) to continuously track cumulative cash withdrawals, deposits, net injected capital, and all-time net profit across transaction replaying.
+  - Fixed a critical bug in `TransactionModal.tsx` where brokerage fee was hardcoded to `0` when creating new BUY/SELL transactions, ensuring user-entered brokerage and regulatory fees are accurately recorded, deducted from cash balance, and capitalized into the FIFO share lot cost basis.
 - **Phase 16: Live Market Price Sync, Real-Time Valuation & Resilient DPS Scraper**
   - Resolved Market Price column defaulting to Avg Cost by engineering a multi-tiered scraper fallback in `PSXScraperMarketDataProvider`: extracts latest trade tick (`ticks[0]`) from live intraday `/timeseries/intraday/{sym}`, falls back to official closing bar from `/timeseries/eod/{sym}` for off-hours/weekends, and falls back to PostgreSQL persisted quotes.
   - Resolved background worker context failures by eliminating unsafe thread-local Flask `g.db_session` commits inside `ThreadPoolExecutor` parallel workers.

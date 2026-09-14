@@ -158,3 +158,14 @@ Status definitions:
 | `MKT-011` | On-Demand Live Sync & Cache Invalidation | **Completed** | `MKT-009` | One-click **Live Sync** in Header with cache flush endpoint (`POST /api/v1/market/refresh`), visual spinning indicator, and toast notifications. |
 | `MKT-012` | Optimized Transaction Modal UX | **Completed** | `TX-001` | Immediate modal closure upon 201 response, eliminating 20s blocking spinners while valuation refreshes asynchronously. |
 
+## Phase 17: Executive Financial Dashboard & Brokerage Fee Precision
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `DASH-001` | Executive 10-KPI Dashboard Tiers | **Completed** | `VAL-001` | Replaces single stat rows with two distinct 5-card financial tiers: Tier 1 (Wealth & Performance: Net Portfolio Value, All-Time Net P&L, Total Return %, Today's Change PKR, Today's Return %) and Tier 2 (Capital Flows & Liquidity: Total Injected Capital, Invested Cost, Available Cash, Total Deposited, Total Withdrawn). |
+| `DASH-002` | Asset Allocation & Broker Liquidity Distribution | **Completed** | `ACC-001`, `DASH-001` | Visual distribution bar comparing Invested Capital vs Liquid Cash ratio, alongside multi-broker liquidity cards displaying per-broker cash balances, account numbers, and quick-filter interaction. |
+| `DASH-003` | Today's Key Movers Spotlight | **Completed** | `DASH-001`, `MKT-009` | Real-time highlight cards showing Top Gainer and Top Drag based on today's rupee and percentage change, with quick symbol badges and direct trade shortcuts. |
+| `DASH-004` | Cumulative Cash Ledger Ingestion & Injected Capital Math | **Completed** | `LEDGER-001` | Full tracking of `total_cash_deposited` and `total_cash_withdrawn` across the FIFO replayer and valuation engine, calculating exact `net_injected_capital` and `all_time_net_profit` (Realized P&L + Unrealized P&L + Dividends - Fees). |
+| `TX-012` | Brokerage Fee Input Precision | **Completed** | `TX-001` | Fixes transaction creation bug where `brokerage_fee` was hardcoded to 0; now accurately extracts, validates, and persists user-entered brokerage commission for BUY and SELL trades. |
+
+

@@ -224,6 +224,8 @@ const MainApp: React.FC = () => {
             {activeTab === 'dashboard' && (
               <DashboardView
                 data={valuationData}
+                portfolios={portfolios}
+                activePortfolioId={activePortfolioId}
                 onOpenTrade={() => {
                   setEditingTx(null);
                   setIsTradeModalOpen(true);

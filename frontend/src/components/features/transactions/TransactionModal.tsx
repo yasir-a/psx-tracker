@@ -119,7 +119,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           symbol: (isCash || isFee) ? undefined : symbol.toUpperCase().trim(),
           quantity: (isCash || isFee) ? undefined : parseFloat(quantity),
           price_per_share: parseFloat(price),
-          brokerage_fee: 0,
+          brokerage_fee: (isCash || isFee) ? 0 : parseFloat(fee || '0'),
           regulatory_fee: isFee ? parseFloat(price) : 0,
           executed_at: execDate.toISOString(),
           notes: finalNotes,
