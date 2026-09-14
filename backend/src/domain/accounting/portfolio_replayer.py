@@ -26,7 +26,6 @@ class HoldingSnapshot:
 @dataclass
 class PortfolioValuation:
     """Aggregated portfolio performance and holding valuation."""
-
     holdings: dict[str, HoldingSnapshot]
     cash_balance: Money
     total_cost_basis: Money
@@ -37,6 +36,8 @@ class PortfolioValuation:
     total_fees_paid: Money
     total_dividends: Money
     depletions: list[LotDepletion]
+    total_cash_deposited: Money = field(default_factory=lambda: Money.zero("Rs."))
+    total_cash_withdrawn: Money = field(default_factory=lambda: Money.zero("Rs."))
 
 
 class PortfolioReplayer:
@@ -55,6 +56,8 @@ class PortfolioReplayer:
         all_depletions: list[LotDepletion] = []
 
         cash = Money.zero(base_currency)
+        total_cash_deposited = Money.zero(base_currency)
+        total_cash_withdrawn = Money.zero(base_currency)
         total_fees = Money.zero(base_currency)
         total_dividends = Money.zero(base_currency)
         realized_gain = Money.zero(base_currency)
@@ -64,8 +67,10 @@ class PortfolioReplayer:
 
             if tx.transaction_type == TransactionType.CASH_DEPOSIT:
                 cash = cash + tx.price_per_share
+                total_cash_deposited = total_cash_deposited + tx.price_per_share
             elif tx.transaction_type == TransactionType.CASH_WITHDRAWAL:
                 cash = cash - tx.price_per_share
+                total_cash_withdrawn = total_cash_withdrawn + tx.price_per_share
             elif tx.transaction_type == TransactionType.DIVIDEND_CASH:
                 # Track dividend income separately from trading cash balance
                 total_dividends = total_dividends + (tx.gross_amount - tx.total_fees)
@@ -157,4 +162,6 @@ class PortfolioReplayer:
             total_fees_paid=total_fees,
             total_dividends=total_dividends,
             depletions=all_depletions,
+            total_cash_deposited=total_cash_deposited,
+            total_cash_withdrawn=total_cash_withdrawn,
         )

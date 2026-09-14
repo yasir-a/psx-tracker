@@ -397,6 +397,14 @@ class PortfolioAccountingService:
                 "day_change_pct": day_change_pct,
                 "open_lots": lots_data,
             })
+        deposited_val = float(valuation.total_cash_deposited.amount)
+        withdrawn_val = float(valuation.total_cash_withdrawn.amount)
+        net_injected = round(deposited_val - withdrawn_val, 2)
+        realized_val = float(valuation.realized_gain.amount)
+        unrealized_val = round(float(valuation.unrealized_gain.amount), 2)
+        dividends_val = float(valuation.total_dividends.amount)
+        fees_val = float(valuation.total_fees_paid.amount)
+        all_time_net_profit = round(realized_val + unrealized_val + dividends_val - fees_val, 2)
 
         return {
             "portfolio": {
@@ -411,11 +419,15 @@ class PortfolioAccountingService:
                 "total_stock_value": float(valuation.total_market_value.amount),
                 "total_cost_basis": float(valuation.total_cost_basis.amount),
                 "cash_balance": float(valuation.cash_balance.amount),
-                "unrealized_gain": round(float(valuation.unrealized_gain.amount), 2),
+                "unrealized_gain": unrealized_val,
                 "unrealized_return_pct": round(float(valuation.unrealized_return_pct), 2),
-                "realized_gain": float(valuation.realized_gain.amount),
-                "total_fees_paid": float(valuation.total_fees_paid.amount),
-                "total_dividends_earned": float(valuation.total_dividends.amount),
+                "realized_gain": realized_val,
+                "total_fees_paid": fees_val,
+                "total_dividends_earned": dividends_val,
+                "total_cash_deposited": deposited_val,
+                "total_cash_withdrawn": withdrawn_val,
+                "net_injected_capital": net_injected,
+                "all_time_net_profit": all_time_net_profit,
             },
             "holdings": holdings_list,
         }

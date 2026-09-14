@@ -35,6 +35,10 @@ export interface PortfolioSummary {
   realized_gain: number;
   total_fees_paid: number;
   total_dividends_earned: number;
+  total_cash_deposited?: number;
+  total_cash_withdrawn?: number;
+  net_injected_capital?: number;
+  all_time_net_profit?: number;
 }
 
 export interface PortfolioHeader {
