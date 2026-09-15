@@ -8,6 +8,8 @@ import {
   FileText,
   BarChart3,
   ShieldCheck,
+  Coins,
+  ReceiptText,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,9 +19,11 @@ export type NavItemKey =
   | 'holdings'
   | 'transactions'
   | 'corporate_actions'
-  | 'analytics'
-  | 'market'
   | 'tax_report'
+  | 'analytics'
+  | 'dividends'
+  | 'deductions'
+  | 'market'
   | 'admin';
 
 interface SidebarProps {
@@ -32,9 +36,11 @@ const navItems: { key: NavItemKey; label: string; icon: React.FC<{ className?: s
   { key: 'holdings', label: 'Holdings', icon: Wallet },
   { key: 'transactions', label: 'Transaction Ledger', icon: ArrowLeftRight },
   { key: 'corporate_actions', label: 'Corporate Actions', icon: Receipt },
-  { key: 'analytics', label: 'Analytics & KSE-100', icon: BarChart3 },
-  { key: 'market', label: 'PSX Market Data', icon: TrendingUp },
   { key: 'tax_report', label: 'FBR Tax Report', icon: FileText },
+  { key: 'analytics', label: 'Analytics & KSE-100', icon: BarChart3 },
+  { key: 'dividends', label: 'Dividend Analysis', icon: Coins },
+  { key: 'deductions', label: 'Deduction Analysis', icon: ReceiptText },
+  { key: 'market', label: 'PSX Market Data', icon: TrendingUp },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {

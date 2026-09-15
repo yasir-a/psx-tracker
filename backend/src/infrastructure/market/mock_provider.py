@@ -96,8 +96,8 @@ class MockMarketDataProvider(IMarketDataProvider):
         curr_price, prev_close = _MOCK_BASE_PRICES.get(sym, (Decimal("100.00"), Decimal("98.00")))
         return MarketQuote.create(
             symbol=sym,
-            current_price=Money(curr_price, "PKR"),
-            previous_close=Money(prev_close, "PKR"),
+            current_price=Money(curr_price, "Rs."),
+            previous_close=Money(prev_close, "Rs."),
             volume=500000,
             updated_at=datetime.now(timezone.utc),
         )
@@ -122,10 +122,10 @@ class MockMarketDataProvider(IMarketDataProvider):
                     HistoricalPrice(
                         symbol=sym,
                         trade_date=curr,
-                        open_price=Money(base_price, "PKR"),
-                        high_price=Money(base_price, "PKR"),
-                        low_price=Money(base_price, "PKR"),
-                        close_price=Money(base_price, "PKR"),
+                        open_price=Money(base_price, "Rs."),
+                        high_price=Money(base_price, "Rs."),
+                        low_price=Money(base_price, "Rs."),
+                        close_price=Money(base_price, "Rs."),
                         volume=100000,
                     )
                 )

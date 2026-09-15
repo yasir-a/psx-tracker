@@ -18,6 +18,8 @@ import { PortfolioValuationResponse, TransactionRecord } from './types/portfolio
 import { Button } from './components/ui/Button';
 import { PlusCircle, Wallet } from 'lucide-react';
 import { marketService } from './services/marketService';
+import { DividendAnalysisView } from './components/features/dividends/DividendAnalysisView';
+import { DeductionAnalysisView } from './components/features/deductions/DeductionAnalysisView';
 
 const MainApp: React.FC = () => {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
@@ -165,7 +167,7 @@ const MainApp: React.FC = () => {
       onRefreshMarket={handleLiveSync}
       isRefreshingMarket={isActionLoading}
     >
-      {(activeTab) => {
+    {(activeTab, setActiveTab) => {
         if (!valuationData) {
           return (
             <div className="min-h-[50vh] flex items-center justify-center">
@@ -269,6 +271,12 @@ const MainApp: React.FC = () => {
                 }}
               />
             )}
+            {activeTab === 'dividends' && (
+              <DividendAnalysisView
+                portfolioId={activePortfolioId}
+                onOpenRecordDividend={() => setActiveTab('corporate_actions')}
+              />
+            )}
 
             {activeTab === 'analytics' && <AnalyticsView portfolioId={activePortfolioId} />}
 
@@ -277,6 +285,16 @@ const MainApp: React.FC = () => {
             {activeTab === 'tax_report' && (
               <TaxReportView
                 portfolioId={activePortfolioId === 'consolidated' ? (portfolios[0]?.id || '') : activePortfolioId}
+              />
+            )}
+
+            {activeTab === 'deductions' && (
+              <DeductionAnalysisView
+                portfolioId={activePortfolioId}
+                onOpenRecordDeduction={() => {
+                  setEditingTx(null);
+                  setIsTradeModalOpen(true);
+                }}
               />
             )}
 

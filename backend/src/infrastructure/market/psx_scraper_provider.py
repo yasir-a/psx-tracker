@@ -170,8 +170,8 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
 
                     quote = MarketQuote.create(
                         symbol=sym,
-                        current_price=Money(current_price, "PKR"),
-                        previous_close=Money(prev_close, "PKR"),
+                        current_price=Money(current_price, "Rs."),
+                        previous_close=Money(prev_close, "Rs."),
                         volume=volume,
                         updated_at=datetime.now(timezone.utc),
                         status=DataStatus.FRESH,
@@ -198,8 +198,8 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
 
                     quote = MarketQuote.create(
                         symbol=sym,
-                        current_price=Money(c_price, "PKR"),
-                        previous_close=Money(p_close, "PKR"),
+                        current_price=Money(c_price, "Rs."),
+                        previous_close=Money(p_close, "Rs."),
                         volume=vol,
                         updated_at=datetime.combine(bar_date, datetime.min.time(), tzinfo=timezone.utc),
                         status=DataStatus.FRESH,
@@ -262,10 +262,10 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
                         hp = HistoricalPrice(
                             symbol=sym,
                             trade_date=t_date,
-                            open_price=Money(Decimal(str(bar[1])), "PKR"),
-                            high_price=Money(Decimal(str(bar[2])), "PKR"),
-                            low_price=Money(Decimal(str(bar[3])), "PKR"),
-                            close_price=Money(Decimal(str(bar[4])), "PKR"),
+                            open_price=Money(Decimal(str(bar[1])), "Rs."),
+                            high_price=Money(Decimal(str(bar[2])), "Rs."),
+                            low_price=Money(Decimal(str(bar[3])), "Rs."),
+                            close_price=Money(Decimal(str(bar[4])), "Rs."),
                             volume=int(bar[5]),
                         )
                         repo.save_historical_price(hp)
@@ -412,7 +412,7 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
                 "name": p.name,
                 "price": p_price,
                 "pe_ratio": round(max(8.0, p_price / 18.0), 2),
-                "market_cap": f"PKR {round((p_price * 1.2), 1)}B",
+                "market_cap": f"Rs. {round((p_price * 1.2), 1)}B",
                 "dividend_yield": "7.50%",
                 "change_pct": p_change,
             })
@@ -470,7 +470,7 @@ class PSXScraperMarketDataProvider(IMarketDataProvider):
             "announcements": announcements,
             "profile": {
                 "about": f"{company_name} is a leading entity listed on the Pakistan Stock Exchange operating within the {sector_name} sector.",
-                "market_cap": f"PKR {round((current_price * 1.33), 1)}B",
+                "market_cap": f"Rs. {round((current_price * 1.33), 1)}B",
                 "total_shares": "1,335.3M",
                 "free_float_shares": "600.8M",
                 "free_float_pct": 45.0,

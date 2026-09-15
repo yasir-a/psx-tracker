@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Phase 19: Deductions & Account Fees Analysis Module**
+  - Introduced a dedicated **Deduction Analysis** module accessible from the primary sidebar (`/deductions`) with support for Consolidated views and per-broker scoping (*Darson*, *BMA*, *CDC IAS*).
+  - Designed a 5-KPI financial summary bar:
+    - **Total Friction & Deductions**: Cumulative lifetime and year-filtered expenditure across all fees and taxes.
+    - **Brokerage Commission**: Pure broker trade commissions.
+    - **Regulatory Levies**: SECP turnover levies and PSX charges.
+    - **Taxes & FBR Deductions**: FBR Section 150 Dividend WHT, NCCPL Capital Gains Tax debits, and provincial sales tax.
+    - **Trading Fee Drag %**: Cost per 100 PKR of gross trading volume.
+  - Implemented multi-group categorization into **Trading Friction**, **Taxes**, and **Account & Custody** with interactive filter tabs, event counts, total sums, and recipient entities (*Broker*, *FBR*, *NCCPL*, *SECP / PSX*, *CDC*).
+  - Added comparative **Cost by Broker Account** cards revealing trading vs custody/tax costs across brokers.
+  - Added **Monthly Friction Trend** bar charts and annual tax year comparisons.
+  - Built an audited **Recent Deductions Ledger** with color-coded badges, transaction notes, and a direct trigger for recording account fee deductions.
+- **Phase 18: Dividend Analysis & Yield Intelligence Module**
+  - Introduced a dedicated **Dividend Analysis** module accessible from the primary sidebar (`/dividends`) with support for Consolidated views and individual broker filtering.
+  - Designed a 5-KPI performance tier:
+    - **Net Dividends Received**: Net cash credited into broker trading cash.
+    - **Gross Declared Dividends**: Pre-tax declared dividend earnings.
+    - **Advance WHT Deducted**: Advance Section 150 tax paid with statutory Zakat sub-values.
+    - **Weighted Yield on Cost (YoC %)**: True cash return relative to original acquisition cost basis.
+    - **Projected Annual Income**: Forward passive cash flow estimation based on active shareholdings and trailing twelve months (TTM) DPS.
+  - Created an interactive **Dividend by Stock** performance table with sorting options (Net Income, Yield on Cost, Portfolio Contribution %), company names, payout counts, and visual income share progress bars.
+  - Built **Monthly Payout Seasonality** distribution bar charts and annual dividend growth tracking.
+  - Built an audited **Recent Dividend Distributions Ledger** detailing execution dates, receiving accounts, DPS, eligible shares, gross amounts, and net credited cash.
+  - Resolved dividend tax under-reporting by engineering `_extract_dividend_deductions` to accurately extract WHT and Zakat across historical and newly recorded dividends.
 - **Phase 17: Executive Financial Dashboard & Brokerage Fee Accounting Precision**
   - Upgraded the Portfolio Dashboard to a 10-metric financial KPI command center organized into two structured 5-column tiers:
     - **Wealth & Performance Tier**: Total Portfolio Value (with live Today's P&L movement in rupees and %), Equities Market Value (with % allocation and active positions count), Unrealized P&L, All-Time Net Profit (Total Net ROI), and Realized Profit.

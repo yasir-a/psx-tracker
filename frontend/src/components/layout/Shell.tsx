@@ -4,7 +4,7 @@ import { Header } from './Header';
 import { PortfolioListItem } from '../../services/portfolioService';
 
 interface ShellProps {
-  children: (activeTab: NavItemKey) => React.ReactNode;
+  children: (activeTab: NavItemKey, onSelectTab: (tab: NavItemKey) => void) => React.ReactNode;
   portfolios: PortfolioListItem[];
   activePortfolioId: string;
   onSelectPortfolio: (id: string) => void;
@@ -47,7 +47,7 @@ export const Shell: React.FC<ShellProps> = ({
         />
 
         <main className="flex-1 w-full p-6 mx-auto max-w-7xl">
-          {children(activeTab)}
+          {children(activeTab, setActiveTab)}
         </main>
       </div>
     </div>

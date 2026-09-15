@@ -11,7 +11,7 @@ class CashBalance:
     """Pure domain entity representing available cash inside a portfolio."""
 
     portfolio_id: UUID
-    currency: str = "PKR"
+    currency: str = "Rs."
     amount: Decimal = Decimal("0.0000")
     id: UUID = field(default_factory=uuid4)
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -24,7 +24,7 @@ class Portfolio:
     user_id: UUID
     name: str
     description: str | None = None
-    currency: str = "PKR"
+    currency: str = "Rs."
     is_default: bool = False
     id: UUID = field(default_factory=uuid4)
     cash_balance: CashBalance | None = None

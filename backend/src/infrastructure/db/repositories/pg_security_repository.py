@@ -137,8 +137,8 @@ class PgSecurityRepository(ISecurityRepository):
 
         return MarketQuote.create(
             symbol=latest.symbol,
-            current_price=Money(latest.close_price, "PKR"),
-            previous_close=Money(prev.close_price, "PKR"),
+            current_price=Money(latest.close_price, "Rs."),
+            previous_close=Money(prev.close_price, "Rs."),
             volume=latest.volume,
             updated_at=datetime.combine(latest.trade_date, datetime.min.time(), tzinfo=timezone.utc),
             status=DataStatus.STALE,
@@ -164,10 +164,10 @@ class PgSecurityRepository(ISecurityRepository):
             HistoricalPrice(
                 symbol=m.symbol,
                 trade_date=m.trade_date,
-                open_price=Money(m.open_price, "PKR"),
-                high_price=Money(m.high_price, "PKR"),
-                low_price=Money(m.low_price, "PKR"),
-                close_price=Money(m.close_price, "PKR"),
+                open_price=Money(m.open_price, "Rs."),
+                high_price=Money(m.high_price, "Rs."),
+                low_price=Money(m.low_price, "Rs."),
+                close_price=Money(m.close_price, "Rs."),
                 volume=m.volume,
             )
             for m in models

@@ -7,8 +7,8 @@ from src.domain.values.money import Money
 
 
 def test_market_quote_calculations() -> None:
-    curr = Money(Decimal("350.00"), "PKR")
-    prev = Money(Decimal("340.00"), "PKR")
+    curr = Money(Decimal("350.00"), "Rs.")
+    prev = Money(Decimal("340.00"), "Rs.")
     quote = MarketQuote.create("ENGRO", curr, prev, volume=10000)
 
     assert quote.symbol == "ENGRO"

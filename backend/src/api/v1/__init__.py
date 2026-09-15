@@ -9,6 +9,8 @@ from src.api.v1.market import market_bp
 from src.api.v1.portfolio import portfolio_bp
 from src.api.v1.system import system_bp
 from src.api.v1.admin import admin_bp
+from src.api.v1.dividends import dividends_bp
+from src.api.v1.deductions import deductions_bp
 
 v1_bp = Blueprint("v1", __name__, url_prefix="/api/v1")
 
@@ -20,3 +22,5 @@ v1_bp.register_blueprint(market_bp)
 v1_bp.register_blueprint(corporate_actions_bp)
 v1_bp.register_blueprint(analytics_bp)
 v1_bp.register_blueprint(system_bp)
+v1_bp.register_blueprint(dividends_bp)
+v1_bp.register_blueprint(deductions_bp)
