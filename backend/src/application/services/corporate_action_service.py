@@ -85,9 +85,10 @@ class CorporateActionService:
             symbol=sym,
             quantity=eligible_qty,
             price_per_share=dividend_per_share,
-            regulatory_fee=div_calc.wht_amount + div_calc.zakat_amount,
+            brokerage_fee=div_calc.wht_amount,
+            regulatory_fee=div_calc.zakat_amount,
             executed_at=tx_date,
-            notes=f"DPS: PKR {dividend_per_share.amount} | Tax: {tax_status.value} ({div_calc.wht_rate_pct}%) | Zakat: PKR {div_calc.zakat_amount.amount}",
+            notes=f"DPS: Rs. {dividend_per_share.amount} | Tax: {tax_status.value} ({div_calc.wht_rate_pct}%) | Zakat: PKR {div_calc.zakat_amount.amount}",
         )
         saved_tx = self._tx_repo.save(dividend_tx)
 

@@ -151,14 +151,14 @@ The file should include a header row matching the standard export columns (case-
 | `Type` | **Yes** | `BUY` | Transaction type: `BUY`, `SELL`, `CASH_DEPOSIT`, `CASH_WITHDRAWAL`, `DIVIDEND_CASH`, `BONUS_SHARES`, `RIGHT_SHARES`, `FEE` (or `DEDUCTION`). |
 | `Symbol` | Conditional | `SYS` | Required for `BUY`, `SELL`, `BONUS_SHARES`, `RIGHT_SHARES`. Leave blank for cash/fee events. |
 | `Quantity` | Conditional | `500` | Number of shares. Must be a positive integer for share trades. |
-| `Price per Share (PKR)` | Conditional | `420.50` | Execution price per share for trades, or Dividend Per Share (DPS), or Deposit/Withdrawal/Fee amount. |
-| `Fees (PKR)` | No | `125.00` | Total brokerage commission + regulatory taxes. Defaults to `0.00`. |
+| `Price per Share (Rs.)` | Conditional | `420.50` | Execution price per share for trades, or Dividend Per Share (DPS), or Deposit/Withdrawal/Fee amount. |
+| `Fees (Rs.)` | No | `125.00` | Total brokerage commission + regulatory taxes. Defaults to `0.00`. |
 | `Notes` | No | `Initial buy order` | Optional reference note or description. |
 
 ### 2. CSV Template Example
 
 ```csv
-Date,Type,Symbol,Quantity,Price per Share (PKR),Fees (PKR),Notes
+Date,Type,Symbol,Quantity,Price per Share (Rs.),Fees (Rs.),Notes
 2026-01-01,CASH_DEPOSIT,,0,500000.00,0,Initial capital deposit
 2026-01-05,BUY,SYS,1000,420.00,420.00,Brokerage trade confirmation #1024
 2026-01-10,FEE,,0,300.00,0,[UIN FEES] Account maintenance

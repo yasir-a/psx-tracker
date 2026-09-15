@@ -138,7 +138,7 @@ psx-tracker/
 
 ## 6. Current Implementation Status
 
-* **Current Phase:** **Phase 17 — Operational (Executive Financial Dashboard & Brokerage Fee Accounting Precision)**
+* **Current Phase:** **Phase 19 — Operational (Dividend Intelligence & Deductions Analysis Modules)**
 * **Status:** Complete production-grade PSX Portfolio Tracker:
   - Ledger-grade FIFO lot accounting & multi-account broker management (*Darson*, *BMA*, *CDC IAS*, inter-account share transfers with custom transfer dates, and consolidated views).
   - Corporate Actions engine (15% Filer / 30% Non-Filer WHT, Zakat deductions, Bonus shares, Rights, Splits with custom eligible shares support for post-record-date sold positions).
@@ -151,7 +151,10 @@ psx-tracker/
   - **Phase 15 Excel / CSV Import & Ledger Enhancements**: Direct transaction history dump import into broker accounts with strict schema checks, FIFO simulation, chronological sorting, full transaction editability, and pagination controls.
   - **Phase 16 Live Market Price Sync & Resilient Scraper**: Multi-tiered quote scraper supporting live intraday ticks (`/timeseries/intraday/{sym}`) and official closing EOD fallback (`/timeseries/eod/{sym}`) with PostgreSQL persistence; fast in-memory caching (10s–20s TTL) with one-click **Live Sync** cache invalidation (`POST /api/v1/market/refresh`), non-blocking transaction creation UX, and parallel concurrent quote ingestion preventing IP blocks and sequential stalls.
   - **Phase 17 Executive Financial Dashboard & Fee Precision**: 10-metric financial KPI command center (Total Portfolio Value with Today's P&L movement, Equities Market Value, Unrealized Gain, All-Time Net Profit/Total ROI, Realized Profit, Trading Cash, Total Cash Deposited, Total Cash Withdrawn, Net Injected Capital, and Dividend Income with Yield %); combined with an Asset Allocation bar (Equities vs. Cash), individual Broker Liquidity cards, Today's Key Movers spotlight (Top Gainer & Top Pullback), and accurate brokerage fee capture during trade creation.
-  - 100% automated test suite passing (41 tests) with clean TypeScript Vite frontend builds.
+  - **Phase 18 Dividend Analysis & Yield Intelligence**: Dedicated sidebar module (`/dividends`) with 5-card KPI summary (Net Dividends Received, Gross Declared, Advance WHT Deducted, Weighted Yield on Cost %, Projected Annual Dividend), stock-by-stock breakdown table (Gross, WHT, Net, Yield on Cost, Market Yield, Income Share %), monthly payout seasonality distribution bar chart, annual passive income history, and recent distributions audit ledger.
+  - **Phase 19 Deductions & Fee Intelligence**: Dedicated sidebar module (`/deductions`) auditing all portfolio friction costs: 5-card KPI bar (Total Deductions, Brokerage Commission, Regulatory Levies, Taxes/FBR, Fee Drag %); categorization into Trading Friction, Taxes, and Account & Custody; side-by-side broker account cost comparison; monthly friction trends; and detailed deductions audit ledger.
+  - 100% automated test suite passing (43 tests) with clean TypeScript Vite frontend builds.
+
 
 
 

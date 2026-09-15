@@ -47,7 +47,7 @@ class PortfolioReplayer:
     def replay(
         transactions: Sequence[Transaction],
         current_prices: Mapping[str, Money] | None = None,
-        base_currency: str = "PKR",
+        base_currency: str = "Rs2.",
     ) -> PortfolioValuation:
         prices = current_prices or {}
         sorted_txs = sorted(transactions, key=lambda tx: tx.executed_at)

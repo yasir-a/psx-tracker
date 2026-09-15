@@ -162,10 +162,33 @@ Status definitions:
 
 | Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
 | :--- | :--- | :--- | :--- | :--- |
-| `DASH-001` | Executive 10-KPI Dashboard Tiers | **Completed** | `VAL-001` | Replaces single stat rows with two distinct 5-card financial tiers: Tier 1 (Wealth & Performance: Net Portfolio Value, All-Time Net P&L, Total Return %, Today's Change PKR, Today's Return %) and Tier 2 (Capital Flows & Liquidity: Total Injected Capital, Invested Cost, Available Cash, Total Deposited, Total Withdrawn). |
+| `DASH-001` | Executive 10-KPI Dashboard Tiers | **Completed** | `VAL-001` | Replaces single stat rows with two distinct 5-card financial tiers: Tier 1 (Wealth & Performance: Net Portfolio Value, All-Time Net P&L, Total Return %, Today's Change Rs., Today's Return %) and Tier 2 (Capital Flows & Liquidity: Total Injected Capital, Invested Cost, Available Cash, Total Deposited, Total Withdrawn). |
 | `DASH-002` | Asset Allocation & Broker Liquidity Distribution | **Completed** | `ACC-001`, `DASH-001` | Visual distribution bar comparing Invested Capital vs Liquid Cash ratio, alongside multi-broker liquidity cards displaying per-broker cash balances, account numbers, and quick-filter interaction. |
 | `DASH-003` | Today's Key Movers Spotlight | **Completed** | `DASH-001`, `MKT-009` | Real-time highlight cards showing Top Gainer and Top Drag based on today's rupee and percentage change, with quick symbol badges and direct trade shortcuts. |
 | `DASH-004` | Cumulative Cash Ledger Ingestion & Injected Capital Math | **Completed** | `LEDGER-001` | Full tracking of `total_cash_deposited` and `total_cash_withdrawn` across the FIFO replayer and valuation engine, calculating exact `net_injected_capital` and `all_time_net_profit` (Realized P&L + Unrealized P&L + Dividends - Fees). |
 | `TX-012` | Brokerage Fee Input Precision | **Completed** | `TX-001` | Fixes transaction creation bug where `brokerage_fee` was hardcoded to 0; now accurately extracts, validates, and persists user-entered brokerage commission for BUY and SELL trades. |
+
+## Phase 18: Dividend Analysis & Yield Intelligence
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `DIV-001` | Dedicated Dividend Analysis Sidebar Module | **Completed** | `CA-001` | New navigation item (`Coins` icon) supporting Consolidated and per-broker scoping with seamless routing to Corporate Actions data entry. |
+| `DIV-002` | Dividend 5-KPI Performance Tier | **Completed** | `DIV-001` | 5 top-level stat cards: Net Dividends Received, Gross Declared Dividends, Advance WHT Deducted (with Zakat sub-value), Weighted Yield on Cost %, and Projected Annual Income. |
+| `DIV-003` | Stock-by-Stock Dividend Performance Table | **Completed** | `DIV-001` | Table sorting stocks by net cash received, Yield on Cost (YoC %) vs purchase cost basis, Current Market Yield %, Gross, and Income Contribution % progress bar. |
+| `DIV-004` | Monthly Payout Seasonality & Annual History | **Completed** | `DIV-001` | Monthly distribution bar chart revealing quarterly PSX earnings seasonality (Mar, Jun, Sep, Dec) and annual year-over-year dividend growth comparison. |
+| `DIV-005` | Audited Dividend Distributions Ledger | **Completed** | `DIV-001` | Full audit trail displaying executed date, receiving broker account, DPS, eligible shares on record date, gross, tax, and net credited cash. |
+| `DIV-006` | Robust WHT & Zakat Deduction Extraction | **Completed** | `DIV-001` | Fixed WHT 0/missing bug by parsing regulatory fees, brokerage fees, and notes across historical and new dividend records. |
+
+## Phase 19: Deductions & Account Fees Analysis Module
+
+| Feature ID | Feature Name | Status | Dependencies | Notes & Acceptance Criteria |
+| :--- | :--- | :--- | :--- | :--- |
+| `DED-001` | Dedicated Deductions Analysis Sidebar Module | **Completed** | `TX-005` | New navigation item (`ReceiptText` icon) supporting Consolidated and per-broker scoping with direct modal trigger for recording account fees. |
+| `DED-002` | Deductions 5-KPI Financial Bar | **Completed** | `DED-001` | 5 summary cards: Total Friction & Deductions, Brokerage Commission Paid, Regulatory Levies (SECP/PSX), Taxes & FBR Deductions (WHT, CGT, SST), and Trading Fee Drag %. |
+| `DED-003` | Multi-Group Deductions Category Breakdown | **Completed** | `DED-001` | Interactive table categorizing fees into Trading Friction, Taxes, and Account & Custody, with event counts, total amounts, share percentages, and recipient entities. |
+| `DED-004` | Cross-Broker Friction Comparison | **Completed** | `DED-001`, `ACC-001` | Side-by-side cost breakdown per broker account (*Darson*, *BMA*, *CDC IAS*) dividing expenses between trading fees and custody/taxes. |
+| `DED-005` | Monthly Friction Trend Bar Chart | **Completed** | `DED-001` | Visual month-over-month fee expenditure bar chart tracking cost spikes and annual comparison across tax years. |
+| `DED-006` | Detailed Deductions Audit Ledger | **Completed** | `DED-001` | Chronological log of every fee event with color-coded group badges (Indigo for Trading, Rose for Taxes, Amber for Custody), dates, symbols, notes, and exact rupee amounts. |
+
 
 

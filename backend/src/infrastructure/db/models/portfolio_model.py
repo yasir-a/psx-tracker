@@ -43,7 +43,7 @@ class PortfolioModel(Base, TimestampMixin):
     )
     currency: Mapped[str] = mapped_column(
         String(3),
-        default="PKR",
+        default="Rs.",
         nullable=False,
     )
     is_default: Mapped[bool] = mapped_column(
@@ -80,7 +80,7 @@ class CashBalanceModel(Base):
     )
     currency: Mapped[str] = mapped_column(
         String(3),
-        default="PKR",
+        default="Rs.",
         nullable=False,
     )
     amount: Mapped[Decimal] = mapped_column(

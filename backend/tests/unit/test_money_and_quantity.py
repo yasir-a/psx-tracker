@@ -8,8 +8,8 @@ from src.domain.values.quantity import Quantity
 
 
 def test_money_arithmetic_and_immutability() -> None:
-    m1 = Money(Decimal("100.50"), "PKR")
-    m2 = Money(Decimal("49.50"), "PKR")
+    m1 = Money(Decimal("100.50"), "Rs.")
+    m2 = Money(Decimal("49.50"), "Rs.")
 
     # Add
     assert (m1 + m2).amount == Decimal("150.00")
@@ -23,11 +23,11 @@ def test_money_arithmetic_and_immutability() -> None:
 
 def test_money_disallows_floats() -> None:
     with pytest.raises(TypeError):
-        Money(100.50, "PKR")  # type: ignore[arg-type]
+        Money(100.50, "Rs.")  # type: ignore[arg-type]
 
 
 def test_money_currency_mismatch() -> None:
-    m1 = Money(Decimal("100.00"), "PKR")
+    m1 = Money(Decimal("100.00"), "Rs.")
     m2 = Money(Decimal("100.00"), "USD")
     with pytest.raises(ValueError):
         _ = m1 + m2

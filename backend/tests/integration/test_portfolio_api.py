@@ -29,7 +29,7 @@ def test_full_portfolio_trade_lifecycle_and_valuation(client: FlaskClient) -> No
     assert create_res.status_code == 201
     portfolio_id = create_res.json["id"]
 
-    # 3. Deposit PKR 500,000 Cash
+    # 3. Deposit Rs. 500,000 Cash
     dep_res = client.post(
         f"/api/v1/portfolio/{portfolio_id}/transactions",
         headers=headers,
@@ -41,7 +41,7 @@ def test_full_portfolio_trade_lifecycle_and_valuation(client: FlaskClient) -> No
     )
     assert dep_res.status_code == 201
 
-    # 4. BUY 500 Shares of ENGRO @ 300 PKR
+    # 4. BUY 500 Shares of ENGRO @ 300 Rs.
     buy_res = client.post(
         f"/api/v1/portfolio/{portfolio_id}/transactions",
         headers=headers,
@@ -69,7 +69,7 @@ def test_full_portfolio_trade_lifecycle_and_valuation(client: FlaskClient) -> No
     assert "name" in engro
     assert len(engro["open_lots"]) == 1
 
-    # 6. SELL 200 Shares of ENGRO @ 350 PKR
+    # 6. SELL 200 Shares of ENGRO @ 350 Rs.
     sell_res = client.post(
         f"/api/v1/portfolio/{portfolio_id}/transactions",
         headers=headers,

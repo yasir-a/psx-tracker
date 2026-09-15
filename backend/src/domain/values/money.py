@@ -10,7 +10,7 @@ class Money:
     """Immutable monetary value object enforcing Decimal precision and currency safety."""
 
     amount: Decimal
-    currency: str = "PKR"
+    currency: str = "Rs."
 
     def __post_init__(self) -> None:
         if isinstance(self.amount, float):
@@ -18,11 +18,11 @@ class Money:
         if not isinstance(self.amount, Decimal):
             object.__setattr__(self, "amount", Decimal(str(self.amount)))
         if not self.currency or len(self.currency) != 3:
-            raise ValueError("Currency must be a 3-letter ISO code (e.g., 'PKR')")
+            raise ValueError("Currency must be a 3-letter ISO code (e.g., 'Rs.')")
         object.__setattr__(self, "currency", self.currency.upper())
 
     @classmethod
-    def zero(cls, currency: str = "PKR") -> Money:
+    def zero(cls, currency: str = "Rs.") -> Money:
         return cls(amount=Decimal("0.0000"), currency=currency)
 
     def _ensure_same_currency(self, other: Money) -> None:

@@ -16,14 +16,14 @@ def test_full_portfolio_replayer_lifecycle() -> None:
     t0 = datetime(2026, 1, 1, 9, 30, tzinfo=timezone.utc)
 
     transactions = [
-        # 1. Deposit 500,000 PKR
+        # 1. Deposit 500,000 Rs.
         Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.CASH_DEPOSIT,
             price_per_share=Money(Decimal("500000.00")),
             executed_at=t0,
         ),
-        # 2. Buy 1,000 SYS @ 400 + 400 fee = 400,400 PKR
+        # 2. Buy 1,000 SYS @ 400 + 400 fee = 400,400 Rs.
         Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.BUY,
@@ -33,7 +33,7 @@ def test_full_portfolio_replayer_lifecycle() -> None:
             brokerage_fee=Money(Decimal("400.00")),
             executed_at=t0 + timedelta(days=1),
         ),
-        # 3. Cash Dividend from SYS: 5.00/sh = 5,000 PKR - 750 tax = 4,250 net
+        # 3. Cash Dividend from SYS: 5.00/sh = 5,000 Rs. - 750 tax = 4,250 net
         Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.DIVIDEND_CASH,
@@ -81,7 +81,7 @@ def test_full_portfolio_replayer_lifecycle() -> None:
     # Unrealized %: (47,760 / 240,240) * 100 = 19.88%
     assert valuation.unrealized_return_pct == Decimal("19.88")
 
-    # Cash = 500k deposit - 400,400 buy + 179,800 sell net = 279,400 PKR (dividends tracked separately)
+    # Cash = 500k deposit - 400,400 buy + 179,800 sell net = 279,400 Rs. (dividends tracked separately)
     assert valuation.cash_balance.amount == Decimal("279400.0000")
     assert valuation.total_dividends.amount == Decimal("4250.0000")
 
@@ -92,14 +92,14 @@ def test_fee_deduction_reduces_cash_balance() -> None:
     t0 = datetime(2026, 1, 1, 9, 30, tzinfo=timezone.utc)
 
     transactions = [
-        # Deposit 100,000 PKR
+        # Deposit 100,000 Rs.
         Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.CASH_DEPOSIT,
             price_per_share=Money(Decimal("100000.00")),
             executed_at=t0,
         ),
-        # Fee deduction: UIN FEES 300 PKR
+        # Fee deduction: UIN FEES 300 Rs.
         Transaction(
             portfolio_id=portfolio_id,
             transaction_type=TransactionType.FEE,

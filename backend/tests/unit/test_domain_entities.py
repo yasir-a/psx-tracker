@@ -23,11 +23,11 @@ def test_portfolio_and_cash_balance_creation() -> None:
     portfolio = Portfolio(
         user_id=user_id,
         name="Main Growth Portfolio",
-        currency="PKR",
+        currency="Rs.",
     )
     cash = CashBalance(
         portfolio_id=portfolio.id,
-        currency="PKR",
+        currency="Rs.",
         amount=Decimal("500000.0000"),
     )
     portfolio.cash_balance = cash

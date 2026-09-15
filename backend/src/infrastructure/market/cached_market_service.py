@@ -36,9 +36,9 @@ class CachedMarketService:
         d = json.loads(data)
         return MarketQuote(
             symbol=d["symbol"],
-            current_price=Money(Decimal(d["current_price"]), "PKR"),
-            previous_close=Money(Decimal(d["previous_close"]), "PKR"),
-            change=Money(Decimal(d["change"]), "PKR"),
+            current_price=Money(Decimal(d["current_price"]), "Rs."),
+            previous_close=Money(Decimal(d["previous_close"]), "Rs."),
+            change=Money(Decimal(d["change"]), "Rs."),
             change_percent=Decimal(d["change_percent"]),
             volume=int(d["volume"]),
             updated_at=datetime.fromisoformat(d["updated_at"]),

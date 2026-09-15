@@ -18,7 +18,7 @@ def test_corporate_actions_full_lifecycle_replay() -> None:
     portfolio_id = uuid4()
     t0 = datetime(2026, 1, 1, 9, 30, tzinfo=timezone.utc)
 
-    # 1. Buy 1,000 shares ENGRO @ 300 PKR
+    # 1. Buy 1,000 shares ENGRO @ 300 Rs.
     tx_buy = Transaction(
         portfolio_id=portfolio_id,
         transaction_type=TransactionType.BUY,
@@ -35,12 +35,12 @@ def test_corporate_actions_full_lifecycle_replay() -> None:
         transaction_type=TransactionType.BONUS_SHARES,
         symbol="ENGRO",
         quantity=Quantity(Decimal("100")),
-        price_per_share=Money.zero("PKR"),
+        price_per_share=Money.zero("Rs."),
         executed_at=t0 + timedelta(days=30),
     )
 
-    # 3. Cash Dividend of 5.00 PKR/sh on 1,100 shares with 15% Filer WHT
-    # Gross: 1,100 * 5 = 5,500 PKR. WHT: 825 PKR. Net: 4,675 PKR
+    # 3. Cash Dividend of 5.00 Rs./sh on 1,100 shares with 15% Filer WHT
+    # Gross: 1,100 * 5 = 5,500 Rs. WHT: 825 Rs. Net: 4,675 Rs.
     tx_div = Transaction(
         portfolio_id=portfolio_id,
         transaction_type=TransactionType.DIVIDEND_CASH,
@@ -51,7 +51,7 @@ def test_corporate_actions_full_lifecycle_replay() -> None:
         executed_at=t0 + timedelta(days=60),
     )
 
-    # 4. Sell 600 shares @ 350 PKR - 200 fee
+    # 4. Sell 600 shares @ 350 Rs. - 200 fee
     tx_sell = Transaction(
         portfolio_id=portfolio_id,
         transaction_type=TransactionType.SELL,
@@ -68,8 +68,8 @@ def test_corporate_actions_full_lifecycle_replay() -> None:
     holding = valuation.holdings["ENGRO"]
     assert holding.quantity.value == Decimal("500")
 
-    # Total remaining cost basis: 400 * 300.30 = 120,120 PKR
+    # Total remaining cost basis: 400 * 300.30 = 120,120 Rs.
     assert holding.total_cost_basis.amount == Decimal("120120.0000")
 
-    # Net Dividends recorded: 5,500 gross - 825 WHT = 4,675 PKR
+    # Net Dividends recorded: 5,500 gross - 825 WHT = 4,675 Rs.
     assert valuation.total_dividends.amount == Decimal("4675.0000")
